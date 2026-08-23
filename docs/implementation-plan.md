@@ -121,12 +121,29 @@ WP3で実装した画面・コンポーネントを、実際のGoogle認証・In
 - オフライン時の画面表示・エラーハンドリング（仕様書11章）
 - GitHub Pagesへのビルド成果物デプロイ用GitHub Actionsワークフロー
 - **完了条件**: ビルド成果物をローカルでホスティングし、Lighthouse等でPWA要件（インストール可能・オフライン起動）を満たすことを確認
+- **状況**: ✅ 完了（2026-08-23、`feature/pwa-finalize`ブランチ）
+  - PWAアイコン（192x192・512x512・512x512 maskable）をプレースホルダーとして生成し配置（`public/icons/`）。将来正式な素材に差し替え可能
+  - `manifest.webmanifest`にアイコン・`description`・`lang: "ja"`・`theme_color`を設定
+  - `favicon.svg`・`apple-touch-icon`もアイコンデザインに合わせて更新
+  - Service Workerの`navigateFallback`を設定（従来`navigateFallbackDenylist`のみで`navigateFallback`自体が未設定という不備があったため修正）
+  - **仕様との重要な差分の発見・修正**: オフライン時の挙動を実装中に、「認証に失敗すると常にログイン画面に飛ばされ、キャッシュ済みデータがあっても閲覧できない」という要件定義書3章・11章違反の実装になっていたことに気づき、`App.tsx`を「キャッシュ済みデータがあれば認証を待たずに一覧画面へ進む」設計に修正（WP3.5時点の実装の不備）
+  - 「同期」ボタンのオフライン時エラー表示（`ContentListScreen`に`syncError`prop追加）
+  - 音声再生エラー時に該当コンテンツをスキップする対応（`hooks/audioPlayer.ts`が`ended`/`error`両イベントを購読）
+  - GitHub Actionsのデプロイワークフロー（`.github/workflows/deploy.yml`、`actions/deploy-pages`使用、`main`へのpushで自動実行）
+  - 単体テスト合計142件すべて成功。lint・format・build・E2Eも成功を確認済み
+  - `npm run build` + `npm run preview`（本番相当）でPlaywrightから実機確認:
+    - Service Workerの登録・activate（`skipWaiting`・`clientsClaim`）を確認
+    - Cache Storageにアプリシェル一式（index.html・JS・CSS・アイコン3種・manifest）が正しくプリキャッシュされていることを確認
+    - manifestのインストール可能要件（name/short_name/icons 192・512/start_url）を確認
+    - Lighthouse（12.8.2）はPWAカテゴリの監査自体が廃止されており使用不可だったため、上記の直接確認で代替した
+    - Playwrightの`context.setOffline()`によるオフライン再読み込みの自動テストは、CDPレベルのオフラインエミュレーションがService Workerをバイパスする挙動のため実施できなかった（Cache Storageの中身自体は確認済みのため、実機（実ブラウザでの機内モード等）での最終確認はWP5に持ち越す）
+  - `main`へのマージはユーザー承認待ち
 
 ### WP5: 結合・実データ確認（`feature/integration`、または各WPの延長で実施）
 
 - 実際のGoogle Driveフォルダ・TSV・音声ファイルを用いた疎通確認
 - `.opus`ファイルの実ブラウザ再生確認（仕様書7.3節のリスク項目の解消）
-- スマートフォン実機での確認
+- スマートフォン実機での確認（オフライン・機内モードでの再読み込み・一覧/練習画面の動作確認を含む。WP4ではPlaywrightの制約により自動化できなかったため）
 - E2E（Playwright）シナリオの拡充（仕様書12章）
 - **完了条件**: テスト計画書に定めるシナリオがすべて成功し、実機で一連の練習フローが問題なく行える
 

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import App from "../../src/App";
+import { getAllContents } from "../../src/data/db";
 import { saveDriveSettings } from "../../src/data/localStorage";
 
 // 参照: docs/spec.md 4章（画面遷移）
@@ -33,6 +34,7 @@ vi.mock("../../src/domain/sync", () => ({
 beforeEach(() => {
   localStorage.clear();
   requestTokenMock.mockReset();
+  vi.mocked(getAllContents).mockReset().mockResolvedValue([]);
 });
 
 describe("App", () => {
@@ -60,5 +62,25 @@ describe("App", () => {
 
     expect(await screen.findByText("英語音読練習")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "同期" })).toBeInTheDocument();
+  });
+
+  it("サイレント再認証に失敗（オフライン等）しても、キャッシュ済みデータがあれば一覧画面が表示される（仕様書11章）", async () => {
+    requestTokenMock.mockRejectedValue(new Error("offline"));
+    // reloadFromDb内でも呼ばれるため、両方の呼び出しで同じ結果を返す
+    vi.mocked(getAllContents).mockResolvedValue([
+      {
+        id: 1,
+        categoryId: "01",
+        englishText: "Cached content.",
+        japaneseText: "キャッシュ済みコンテンツ。",
+        audioFileName: "1.opus",
+      },
+    ]);
+
+    render(<App />);
+
+    expect(await screen.findByText("Cached content.")).toBeInTheDocument();
+    // ログイン画面には遷移しない
+    expect(screen.queryByRole("button", { name: "Googleでログイン" })).not.toBeInTheDocument();
   });
 });

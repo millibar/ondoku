@@ -35,8 +35,14 @@ export function createHtmlAudioPlayer(audio: HTMLAudioElement): AudioPlayer {
     getCurrentTime: () => audio.currentTime,
     getDuration: () => (Number.isFinite(audio.duration) ? audio.duration : 0),
     onEnded(callback) {
+      // 再生エラー（未対応フォーマット等）が起きた場合も再生終了と同様に扱い、
+      // 該当コンテンツをスキップして次へ進めるようにする（仕様書11章）
       audio.addEventListener("ended", callback);
-      return () => audio.removeEventListener("ended", callback);
+      audio.addEventListener("error", callback);
+      return () => {
+        audio.removeEventListener("ended", callback);
+        audio.removeEventListener("error", callback);
+      };
     },
     onTimeUpdate(callback) {
       audio.addEventListener("timeupdate", callback);
