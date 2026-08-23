@@ -105,6 +105,14 @@ WP3で実装した画面・コンポーネントを、実際のGoogle認証・In
 - 練習記録の保存（`db.incrementPracticeCount`等）
 - 練習状態の保存・復元（`PracticeSessionState`、仕様書5.5節）
 - **完了条件**: ローカル環境（`npm run dev`）で一連の操作が実際に行える。音声再生エンジンの単体テストはモック化した`HTMLAudioElement`で検証する
+- **状況**: ✅ 完了（2026-08-23、`feature/screens`ブランチ継続）
+  - `hooks/audioPlayer.ts`・`hooks/usePlaybackEngine.ts`: `AudioPlayer`抽象を挟むことでテスト容易性を確保し、レッド・グリーン・リファクタリングで実装（7テスト）
+  - `screens/LoginScreen.tsx`: WP3で漏れていたログイン画面を追加（2テスト）
+  - `App.tsx`: 画面遷移・Google認証・IndexedDBデータ供給・同期・音声再生エンジン・練習記録保存・練習状態の保存復元を配線。ルーティング骨格をモックで検証するテストを追加（3テスト）
+  - `npm run dev`で実際に起動し、Playwright（`@playwright/test`のnode API）でスクリーンショット確認を実施
+  - **手動確認で発見・修正した問題**: GISのサイレント再認証（`prompt: ''`）が、環境によってはコールバックが一切呼ばれずハングし「読み込み中...」から進まなくなることを実機確認で発見。5秒でタイムアウトしログイン画面へフォールバックする対策を追加（`App.tsx`の`SILENT_AUTH_TIMEOUT_MS`）
+  - **既知の簡略化**: 練習状態の保存・復元（`PracticeSessionState`）は`practiceMode`・`orderSettings`・`currentContentId`のみ対応。出題範囲の絞り込み（カテゴリ／お気に入りフィルタ）はコンポーネント内ローカル状態のままで復元対象に含めていない（`ContentListScreen`の絞り込み状態をApp側に持ち上げる追加のリファクタリングが必要。将来対応）
+  - 単体テスト合計134件すべて成功。lint・format・build・E2Eも成功を確認済み。`main`へのマージはユーザー承認待ち
 
 ### WP4: PWA仕上げ（`feature/pwa-finalize`）
 
