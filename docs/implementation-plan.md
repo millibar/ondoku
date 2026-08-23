@@ -17,12 +17,14 @@
 
 以下はブラウザでの対話的操作が必要、またはユーザーの秘密情報に関わるため、実装者（Claude Code）側では代行できない。着手前にご準備をお願いする。
 
-| # | 内容 | 備考 |
+| # | 内容 | 状況 |
 |---|---|---|
-| 1 | GitHubリポジトリの作成（例: `ondoku`） | ローカルの`git init`〜初回pushは実装側で対応可能。リポジトリ作成自体はユーザーのGitHubアカウントで行っていただくか、`gh repo create`の実行をこちらから提案し、実行前に確認を取る |
-| 2 | Google Cloud ConsoleでOAuthクライアントID（Webアプリケーション種別）を作成 | 承認済みJavaScript生成元に、開発中は`http://localhost:5173`、本番は`https://<GitHubユーザー名>.github.io`を登録 |
-| 3 | Google Drive上でTSVファイル・音声ファイル（560件）を格納するフォルダを用意し、フォルダIDを控える | 仕様書7.2節の探索ロジックに従う配置（ルート直下、または1階層下のサブフォルダまで） |
-| 4 | （任意）GitHub PagesでのPWA公開設定 | Settings > Pages で`gh-pages`ブランチ or GitHub Actions経由の公開を有効化（デプロイ自動化は5章参照） |
+| 1 | GitHubリポジトリの作成（`ondoku`、public） | ✅ 完了（2026-08-23、`gh repo create`で作成・push済み。 https://github.com/millibar/ondoku ） |
+| 2 | Google Cloud ConsoleでOAuthクライアントID（Webアプリケーション種別）を作成 | ✅ 完了（2026-08-23）。詳細は仕様書7.1節を参照 |
+| 2a | ├ Google Drive APIの有効化（APIとサービス > ライブラリ） | 未確認（ユーザーに確認依頼中） |
+| 2b | └ OAuth同意画面へのテストユーザー登録（`millibarjp@gmail.com`） | 未確認（ユーザーに確認依頼中） |
+| 3 | Google Drive上でTSVファイル・音声ファイル（560件）を格納するフォルダを用意し、フォルダIDを控える | 未着手 |
+| 4 | （任意）GitHub PagesでのPWA公開設定 | 未着手（Settings > Pages で`gh-pages`ブランチ or GitHub Actions経由の公開を有効化。デプロイ自動化は5章参照） |
 
 ## 3. 技術基盤・依存パッケージ
 

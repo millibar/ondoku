@@ -220,9 +220,13 @@ interface DriveSettings {
 
 - Google Identity Services（GIS）の`google.accounts.oauth2.initTokenClient`を使用し、ブラウザ完結でアクセストークンを取得する
 - スコープ: `https://www.googleapis.com/auth/drive.readonly`
-- OAuthクライアントID（Web application種別）はGoogle Cloud Consoleで別途作成し、GitHub Pagesの公開オリジンを承認済みJavaScript生成元として登録する（**ユーザー側での事前準備が必要**。実装計画書で手順化する）
-- クライアントIDは公開情報として扱ってよいため、ソースコードに含めてよい（シークレットではない）
+- OAuthクライアントID（Web application種別）はGoogle Cloud Consoleで作成済み（2026-08-23、ユーザーにより準備完了）
+  - クライアントID: `470110026121-jekddv45e9t7vfroliqufgf8tdl5v6te.apps.googleusercontent.com`（公開情報として`src/config.ts`に定数で保持する）
+  - クライアントシークレットは本実装（GISトークンクライアント方式）では使用しない。コードには含めず、ユーザーの手元で保管する
+  - 承認済みJavaScript生成元: `http://localhost:5173`（開発用）、`https://millibar.github.io`（本番用、GitHub Pagesのオリジン）
+  - 承認済みリダイレクトURIは本実装では未使用（authorization codeフローに切り替える場合のみ必要）
 - トークンはメモリ上にのみ保持し、有効期限切れ時は再取得（サイレント→失敗時はログインボタン表示）
+- Google Cloud Consoleでの追加確認事項: 「Google Drive API」の有効化、OAuth同意画面（User Type: External、公開ステータス: テスト中）へのテストユーザー登録（`millibarjp@gmail.com`。将来共有する家族・友人のアカウントも同様に追加が必要）
 
 ### 7.2 初回セットアップ（Driveフォルダ設定）
 
