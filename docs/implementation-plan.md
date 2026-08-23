@@ -1,0 +1,116 @@
+# 英語音読練習PWA 実装計画書
+
+- 作成日: 2026-08-23
+- 前提: [docs/requirements.md](./requirements.md)、[docs/spec.md](./spec.md)
+
+## 1. 開発の進め方（Git運用ルールの再掲）
+
+`.claude/CLAUDE.md`に定めた通り、以下のルールで進める。
+
+1. 実装に入る際は、必ず`main`ブランチから新しいブランチを作成する（`main`への直接コミットはしない）
+2. 作業単位（後述のフェーズ／作業パッケージ）ごとにブランチを分ける
+3. 実装後は単体テスト（Vitest）・可能な範囲でE2Eテスト（Playwright）を実行し、すべて通過することを確認する
+4. テスト通過後、`main`へのマージ前に必ずユーザーの承認を得る（無断でマージしない）
+5. 承認後、`main`にマージする（マージ方法はユーザーの指示に従う。特に指定がなければPRを作成し、承認後にマージする）
+
+## 2. ユーザー側で事前に準備いただく事項（実装着手前の前提）
+
+以下はブラウザでの対話的操作が必要、またはユーザーの秘密情報に関わるため、実装者（Claude Code）側では代行できない。着手前にご準備をお願いする。
+
+| # | 内容 | 備考 |
+|---|---|---|
+| 1 | GitHubリポジトリの作成（例: `ondoku`） | ローカルの`git init`〜初回pushは実装側で対応可能。リポジトリ作成自体はユーザーのGitHubアカウントで行っていただくか、`gh repo create`の実行をこちらから提案し、実行前に確認を取る |
+| 2 | Google Cloud ConsoleでOAuthクライアントID（Webアプリケーション種別）を作成 | 承認済みJavaScript生成元に、開発中は`http://localhost:5173`、本番は`https://<GitHubユーザー名>.github.io`を登録 |
+| 3 | Google Drive上でTSVファイル・音声ファイル（560件）を格納するフォルダを用意し、フォルダIDを控える | 仕様書7.2節の探索ロジックに従う配置（ルート直下、または1階層下のサブフォルダまで） |
+| 4 | （任意）GitHub PagesでのPWA公開設定 | Settings > Pages で`gh-pages`ブランチ or GitHub Actions経由の公開を有効化（デプロイ自動化は5章参照） |
+
+## 3. 技術基盤・依存パッケージ
+
+仕様書1章の技術スタックに基づき、以下を導入する。
+
+- `react`, `react-dom`
+- `typescript`, `vite`, `@vitejs/plugin-react`
+- `vite-plugin-pwa`
+- `idb`（IndexedDBラッパー）
+- `vitest`, `@testing-library/react`, `jsdom`
+- `@playwright/test`（devcontainerにブラウザ導入済み）
+- `eslint`, `prettier`, 関連プラグイン一式
+
+**状態管理**: 追加ライブラリ（Redux/Zustand等）は導入せず、React標準の`Context` + `useReducer`で実装する（画面数・状態の複雑さから見て過剰と判断。将来的に複雑化した場合は再検討）。
+
+**設定値の保持**: Google OAuthクライアントIDは秘匿情報ではないため、`src/config.ts`に定数として定義する（Viteの環境変数越しにする案も検討したが、ビルド構成をシンプルに保つため定数管理とする）。Driveの「ルートフォルダID」はユーザーごとに異なる個人情報のため、コードには含めず、初回セットアップ画面から`localStorage`に保存する（仕様書7.2節）。
+
+## 4. 作業パッケージ（ブランチ単位）
+
+依存関係を考慮した順序で並べる。各パッケージは1つの作業ブランチに対応する想定（`feature/xxx`）。パッケージ内の粒度が大きい場合はさらに分割してよい。
+
+### WP0: プロジェクト初期セットアップ（`feature/project-setup`）
+
+- `git init`、`.gitignore`作成
+- Vite + React + TypeScriptプロジェクトの雛形作成
+- ESLint / Prettier設定
+- Vitest設定（`vitest.config.ts`、サンプルテスト1件で疎通確認）
+- Playwright設定（`playwright.config.ts`、サンプルE2Eテスト1件で疎通確認）
+- `vite-plugin-pwa`導入（`manifest.webmanifest`は仮設定でよい）
+- Vite `base`をリポジトリ名に合わせて設定
+- GitHub Actions: PR時に`lint` / `test`（Vitest）/ `build`を実行するCIワークフロー
+- **完了条件**: `npm run dev`でひな形画面が表示できる、`npm run test`（Vitest）・`npm run build`・サンプルPlaywrightテストがいずれも成功する
+
+### WP1: ドメインロジック（`feature/domain-logic`）
+
+UIに依存しない純粋関数群。テスト計画書フェーズで先にテストケースを設計し、テストコード作成後に実装する想定（5章「テスト計画書作成」以降のフェーズに対応）。
+
+- 型定義一式（`src/types/index.ts`）
+- TSVパーサー（`src/domain/tsv.ts`）
+- 再生状態遷移・進行ロジック（`src/domain/playback/`）— 仕様書8章の状態機械
+- ストリーク計算（`src/domain/streak.ts`）— 仕様書9.2節
+- 頻度グリッドの色区分計算（`src/domain/grid.ts`）— 仕様書9.3節
+- **完了条件**: 上記モジュールの単体テスト（Vitest）がすべて成功する
+
+### WP2: データ層（`feature/data-layer`）
+
+- IndexedDBラッパー（`src/data/db.ts`）— 仕様書5.2節のスキーマ（`contents` / `practiceRecords` / `dailyLogs` / `audioBlobs`）
+- `localStorage`ラッパー（`src/data/localStorage.ts`）— 仕様書5.3節のキー
+- Google認証（`src/auth/googleAuth.ts`）— GISトークン取得・サイレント再認証
+- Google Driveクライアント（`src/data/driveClient.ts`）— 仕様書7章のフォルダ探索・ファイル取得・MIMEタイプ判定
+- 同期処理（`src/domain/sync.ts`想定）— 仕様書7.4節の一括ダウンロード・進捗通知
+- **完了条件**: IndexedDB / localStorageラッパーの単体テストが成功する（`fake-indexeddb`等でVitest上から検証）。Google認証・Driveクライアントは実APIに依存するため、フェッチ部分をモック化した単体テストで検証する
+
+### WP3: 画面・UIコンポーネント（`feature/screens`）
+
+- 共通コンポーネント: `ProgressBar` / `FrequencyGrid` / `PlaybackControls` / `ContentText`（英文・日本語訳のON/OFF表示） 等
+- ルーティング（React Routerを想定。画面数が少ないため自前の簡易ルーティングでも可。実装時に決定）
+- `SetupScreen`（初回セットアップ）
+- `ContentListScreen`（一覧・絞り込み・頻度グリッド・ストリーク表示）
+- `PracticeScreen`（再生コントロール・モード切り替え・お気に入り）
+- `SettingsScreen`
+- 練習状態の保存・復元（仕様書5.5節、`PracticeSessionState`との連携）
+- **完了条件**: 各画面のコンポーネントテスト（Testing Library、主要な操作・表示分岐）が成功する
+
+### WP4: PWA仕上げ（`feature/pwa-finalize`）
+
+- 本番用`manifest.webmanifest`（アイコン一式を`public/icons`に用意）
+- Service Workerのプリキャッシュ対象・戦略の最終調整
+- オフライン時の画面表示・エラーハンドリング（仕様書11章）
+- GitHub Pagesへのビルド成果物デプロイ用GitHub Actionsワークフロー
+- **完了条件**: ビルド成果物をローカルでホスティングし、Lighthouse等でPWA要件（インストール可能・オフライン起動）を満たすことを確認
+
+### WP5: 結合・実データ確認（`feature/integration`、または各WPの延長で実施）
+
+- 実際のGoogle Driveフォルダ・TSV・音声ファイルを用いた疎通確認
+- `.opus`ファイルの実ブラウザ再生確認（仕様書7.3節のリスク項目の解消）
+- スマートフォン実機での確認
+- E2E（Playwright）シナリオの拡充（仕様書12章）
+- **完了条件**: テスト計画書に定めるシナリオがすべて成功し、実機で一連の練習フローが問題なく行える
+
+## 5. GitHub Pagesへのデプロイ方針
+
+- GitHub Actionsで`main`ブランチへのマージをトリガーに、`npm run build`の成果物をGitHub Pagesへ公開する
+- ワークフローの追加自体もWP0またはWP4の中でブランチを切って実装し、通常のレビュー・承認フローに乗せる
+- 本番公開（実際に`main`へマージしてデプロイが走る）は、ユーザーの承認を得たタイミングで行う
+
+## 6. 未確定・実装時に確認する事項
+
+- ルーティング方法（React Router導入 or 自前実装）はWP3着手時に決定する
+- `.opus`ファイルの実際のコンテナ形式は、ユーザーの実データを確認できるWP2以降のタイミングで検証する（非対応だった場合の変換方針もその時点で相談する）
+- GitHub Actionsのデプロイ方式（`gh-pages`ブランチ運用 or `actions/deploy-pages`）はWP4で決定する
