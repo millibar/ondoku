@@ -91,6 +91,20 @@ UIに依存しない純粋関数群。テスト計画書フェーズで先にテ
 - `SettingsScreen`
 - 練習状態の保存・復元（仕様書5.5節、`PracticeSessionState`との連携）
 - **完了条件**: 各画面のコンポーネントテスト（Testing Library、主要な操作・表示分岐）が成功する
+- **状況**: ✅ 完了（2026-08-23、`feature/screens`ブランチ）。共通コンポーネント4点・画面4点をレッド・グリーン・リファクタリングで実装。データはpropsで受け取り、IO（認証・Drive通信・DB操作）は呼び出し元に委ねる設計。単体テスト23件（累計122件）すべて成功、lint・buildも成功を確認済み。`main`へのマージはユーザー承認待ち
+  - 「ルーティング」「練習状態の保存・復元」（`App.tsx`での実配線）は完了条件（画面単体のコンポーネントテスト）には含まれないため、WP3.5として切り出した（下記）
+
+### WP3.5: 画面統合（`App.tsx`配線）
+
+WP3で実装した画面・コンポーネントを、実際のGoogle認証・IndexedDB・Google Driveと結びつけ、アプリとして動作させる。
+
+- 画面遷移（自前の簡易ルーティング。認証チェック→Drive設定チェック→一覧⇄練習⇄設定）
+- Google認証（`auth/googleAuth.ts`）の実配線、サイレント再認証
+- 一覧画面へのコンテンツ・練習履歴データの供給（`data/db.ts`）
+- 練習画面の音声再生エンジン（`HTMLAudioElement`と`domain/playback`の状態機械を結びつける新規フック）
+- 練習記録の保存（`db.incrementPracticeCount`等）
+- 練習状態の保存・復元（`PracticeSessionState`、仕様書5.5節）
+- **完了条件**: ローカル環境（`npm run dev`）で一連の操作が実際に行える。音声再生エンジンの単体テストはモック化した`HTMLAudioElement`で検証する
 
 ### WP4: PWA仕上げ（`feature/pwa-finalize`）
 
