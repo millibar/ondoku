@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import App from "../../src/App";
 import { getAllContents } from "../../src/data/db";
 import { saveDriveSettings } from "../../src/data/localStorage";
+import { syncFromDrive } from "../../src/domain/sync";
 
 // 参照: docs/spec.md 4章（画面遷移）
 //
@@ -35,6 +36,9 @@ beforeEach(() => {
   localStorage.clear();
   requestTokenMock.mockReset();
   vi.mocked(getAllContents).mockReset().mockResolvedValue([]);
+  vi.mocked(syncFromDrive)
+    .mockReset()
+    .mockResolvedValue({ contentCount: 0, audioFailures: [], tsvParseErrors: [] });
 });
 
 describe("App", () => {
@@ -82,5 +86,23 @@ describe("App", () => {
     expect(await screen.findByText("Cached content.")).toBeInTheDocument();
     // ログイン画面には遷移しない
     expect(screen.queryByRole("button", { name: "Googleでログイン" })).not.toBeInTheDocument();
+  });
+
+  it("初期セットアップ画面でフォルダIDを入力して次へを押すと、初回同期が実行される（回帰テスト）", async () => {
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+
+    fireEvent.change(await screen.findByLabelText("Google DriveのフォルダID"), {
+      target: { value: "folder-123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+
+    // 同期完了後、一覧画面に遷移する（モックのsyncFromDriveは即座に解決するため、
+    // "同期中"表示は一瞬で過ぎ去る可能性があり、最終状態で検証する）
+    expect(await screen.findByText("英語音読練習")).toBeInTheDocument();
+    expect(syncFromDrive).toHaveBeenCalledWith(
+      expect.objectContaining({ rootFolderId: "folder-123", accessToken: "token" }),
+    );
   });
 });

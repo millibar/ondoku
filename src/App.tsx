@@ -232,7 +232,17 @@ function App() {
       return <LoginScreen onLogin={handleLogin} errorMessage={loginError} />;
 
     case "setup":
-      return <SetupScreen onComplete={() => setSettingsVersion((v) => v + 1)} />;
+      return (
+        <SetupScreen
+          onComplete={() => {
+            // bootstrappedをリセットしてブートストラップ判定（初回同期）をやり直す。
+            // これが無いと、setup画面表示時点で既にbootstrapped=trueのため
+            // 「次へ」を押しても同期が始まらない（本バグの原因）
+            setBootstrapped(false);
+            setSettingsVersion((v) => v + 1);
+          }}
+        />
+      );
 
     case "syncing":
       return (
