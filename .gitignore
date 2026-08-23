@@ -23,3 +23,6 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+
+# 作業用スクラッチ（確認用ファイル・スクリーンショット等を一時的に置く場所）
+/tmp/
