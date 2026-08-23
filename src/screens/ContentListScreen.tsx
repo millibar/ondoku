@@ -17,6 +17,8 @@ export interface ContentListItem {
 export interface ContentListScreenProps {
   items: ContentListItem[];
   streak: number;
+  // 同期に失敗した場合のエラーメッセージ（オフライン時など）。参照: docs/spec.md 11章
+  syncError?: string | null;
   onSelect: (id: number) => void;
   onToggleFavorite: (id: number) => void;
   onSync: () => void;
@@ -26,6 +28,7 @@ export interface ContentListScreenProps {
 export function ContentListScreen({
   items,
   streak,
+  syncError = null,
   onSelect,
   onToggleFavorite,
   onSync,
@@ -69,6 +72,7 @@ export function ContentListScreen({
         <button type="button" onClick={onOpenSettings}>
           設定
         </button>
+        {syncError && <p role="alert">{syncError}</p>}
       </header>
 
       <FrequencyGrid cells={gridCells} />

@@ -64,12 +64,17 @@ function rejectAfter(ms: number): Promise<never> {
 function App() {
   const [screen, setScreen] = useState<Screen>({ name: "loading" });
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [authFailed, setAuthFailed] = useState(false);
+  // 初回起動（キャッシュ済みデータが無い）時のログイン/セットアップ/同期フローが
+  // 完了したかどうか。キャッシュ済みデータがあれば、これを待たずに一覧画面へ進む
+  const [bootstrapped, setBootstrapped] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [settingsVersion, setSettingsVersion] = useState(0);
   const [contents, setContents] = useState<Content[]>([]);
   const [records, setRecords] = useState<Map<number, PracticeRecord>>(new Map());
   const [streak, setStreak] = useState(0);
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const reloadFromDb = useCallback(async () => {
     const [allContents, allRecords, dailyLogs] = await Promise.all([
@@ -89,7 +94,14 @@ function App() {
 
   const runSync = useCallback(
     async (rootFolderId: string) => {
-      if (accessToken === null) return;
+      if (accessToken === null) {
+        // オフライン（未ログイン）時は同期できない旨を伝える（仕様書11章）
+        setSyncError(
+          "同期にはログインが必要です。ネットワーク接続とログイン状態を確認してください。",
+        );
+        return;
+      }
+      setSyncError(null);
       setScreen({ name: "syncing" });
       setSyncProgress(null);
       try {
@@ -97,14 +109,39 @@ function App() {
       } catch (error) {
         // 同期に失敗しても、キャッシュ済みデータで一覧画面は表示できるようにする
         console.error("同期に失敗しました", error);
+        setSyncError("同期に失敗しました。ネットワーク接続を確認してもう一度お試しください。");
       }
       await reloadFromDb();
+      setBootstrapped(true);
       setScreen({ name: "list" });
     },
     [accessToken, reloadFromDb],
   );
 
-  // 初回起動時、サイレント再認証を試みる（失敗・タイムアウトしたらログイン画面へ）。
+  // キャッシュ済みデータが1件でもあれば、認証を待たずに即座に一覧画面へ進む
+  // （オフラインでもキャッシュ済みデータで一覧・練習ができるようにする。仕様書3章・11章）
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const existing = await getAllContents();
+        if (cancelled || existing.length === 0) return;
+        await reloadFromDb();
+        if (!cancelled) {
+          setBootstrapped(true);
+          setScreen({ name: "list" });
+        }
+      } catch (error) {
+        console.error("キャッシュ済みデータの読み込みに失敗しました", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // サイレント再認証を試みる（バックグラウンドで常に実行し、成功すればトークンを得る）。
   // GISのサイレント再認証（prompt: ''）は、サードパーティCookie制限等の環境によっては
   // コールバックが一切呼ばれずハングすることがあるため、タイムアウトで打ち切る。
   useEffect(() => {
@@ -114,43 +151,46 @@ function App() {
         if (!cancelled) setAccessToken(result.accessToken);
       })
       .catch(() => {
-        if (!cancelled) setScreen({ name: "login" });
+        if (!cancelled) setAuthFailed(true);
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  // ログイン済みになったら、Drive設定の有無に応じて初期セットアップ or 一覧（初回同期含む）へ
+  // 初回起動（キャッシュ済みデータが無い）の場合のみ、認証結果に応じて
+  // 初期セットアップ・初回同期・ログイン画面のいずれかへ進む
   useEffect(() => {
-    if (accessToken === null) return;
-    let cancelled = false;
-    void (async () => {
-      const driveSettings = getDriveSettings();
-      if (driveSettings === null) {
-        if (!cancelled) setScreen({ name: "setup" });
-        return;
+    if (bootstrapped) return;
+    // setStateをeffect本体で直接呼ばず、マイクロタスク経由にする
+    queueMicrotask(() => {
+      if (accessToken !== null) {
+        const driveSettings = getDriveSettings();
+        if (driveSettings === null) {
+          setBootstrapped(true);
+          setScreen({ name: "setup" });
+        } else {
+          void runSync(driveSettings.rootFolderId);
+        }
+      } else if (authFailed) {
+        setBootstrapped(true);
+        setScreen({ name: "login" });
       }
-      const existing = await getAllContents();
-      if (cancelled) return;
-      if (existing.length === 0) {
-        await runSync(driveSettings.rootFolderId);
-      } else {
-        await reloadFromDb();
-        if (!cancelled) setScreen({ name: "list" });
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, settingsVersion]);
+    });
+    // 認証がまだ確定していない間はloading画面のまま待つ
+  }, [bootstrapped, accessToken, authFailed, settingsVersion, runSync]);
 
   function handleLogin() {
     setLoginError(null);
     authClient
       .requestToken({ silent: false })
-      .then((result) => setAccessToken(result.accessToken))
+      .then((result) => {
+        setAccessToken(result.accessToken);
+        // ログイン画面まで来たのはブートストラップ判定でauthFailedになったため。
+        // 明示ログイン成功を受けて、ブートストラップ判定（Drive設定チェック・初回同期）をやり直す
+        setAuthFailed(false);
+        setBootstrapped(false);
+      })
       .catch(() => setLoginError("ログインに失敗しました。もう一度お試しください。"));
   }
 
@@ -207,13 +247,18 @@ function App() {
         <ContentListScreen
           items={listItems}
           streak={streak}
+          syncError={syncError}
           onSelect={(id) =>
             setScreen({ name: "practice", contentId: id, playlist: contents.map((c) => c.id) })
           }
           onToggleFavorite={(id) => void handleToggleFavorite(id)}
           onSync={() => {
             const driveSettings = getDriveSettings();
-            if (driveSettings) void runSync(driveSettings.rootFolderId);
+            if (driveSettings) {
+              void runSync(driveSettings.rootFolderId);
+            } else {
+              setSyncError("Driveフォルダが設定されていません。設定画面から設定してください。");
+            }
           }}
           onOpenSettings={() => setScreen({ name: "settings" })}
         />

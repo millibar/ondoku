@@ -97,4 +97,18 @@ describe("ContentListScreen", () => {
     fireEvent.click(screen.getByRole("button", { name: "同期" }));
     expect(onSync).toHaveBeenCalledTimes(1);
   });
+
+  it("syncErrorが渡されるとエラーメッセージが表示される（オフライン時など。仕様書11章）", () => {
+    renderScreen({
+      syncError: "同期に失敗しました。ネットワーク接続を確認してもう一度お試しください。",
+    });
+    expect(
+      screen.getByText("同期に失敗しました。ネットワーク接続を確認してもう一度お試しください。"),
+    ).toBeInTheDocument();
+  });
+
+  it("syncErrorがnullのときはエラーメッセージが表示されない", () => {
+    renderScreen({ syncError: null });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
 });
