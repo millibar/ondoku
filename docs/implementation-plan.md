@@ -22,7 +22,7 @@
 | 1 | GitHubリポジトリの作成（`ondoku`、public） | ✅ 完了（2026-08-23、`gh repo create`で作成・push済み。 https://github.com/millibar/ondoku ） |
 | 2 | Google Cloud ConsoleでOAuthクライアントID（Webアプリケーション種別）を作成 | ✅ 完了（2026-08-23）。詳細は仕様書7.1節を参照 |
 | 2a | ├ Google Drive APIの有効化（APIとサービス > ライブラリ） | 未確認（ユーザーに確認依頼中） |
-| 2b | └ OAuth同意画面へのテストユーザー登録（`millibarjp@gmail.com`） | 未確認（ユーザーに確認依頼中） |
+| 2b | └ OAuth同意画面へのテストユーザー登録（`millibarjp@gmail.com`） | ✅ 完了（2026-08-23）。公開ステータス: テスト中、ユーザーの種類: 外部、テストユーザー: `millibarjp@gmail.com` |
 | 3 | Google Drive上でTSVファイル・音声ファイル（560件）を格納するフォルダを用意し、フォルダIDを控える | 未着手 |
 | 4 | （任意）GitHub PagesでのPWA公開設定 | 未着手（Settings > Pages で`gh-pages`ブランチ or GitHub Actions経由の公開を有効化。デプロイ自動化は5章参照） |
 
