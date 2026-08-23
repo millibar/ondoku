@@ -79,6 +79,7 @@ UIに依存しない純粋関数群。テスト計画書フェーズで先にテ
 - Google Driveクライアント（`src/data/driveClient.ts`）— 仕様書7章のフォルダ探索・ファイル取得・MIMEタイプ判定
 - 同期処理（`src/domain/sync.ts`想定）— 仕様書7.4節の一括ダウンロード・進捗通知
 - **完了条件**: IndexedDB / localStorageラッパーの単体テストが成功する（`fake-indexeddb`等でVitest上から検証）。Google認証・Driveクライアントは実APIに依存するため、フェッチ部分をモック化した単体テストで検証する
+- **状況**: ✅ 完了（2026-08-23、`feature/data-layer`ブランチ）。レッド・グリーン・リファクタリングで実装（`domain/sync.ts`も含む）。単体テスト39件（累計83件）すべて成功、lint・buildも成功を確認済み。`main`へのマージはユーザー承認待ち
 
 ### WP3: 画面・UIコンポーネント（`feature/screens`）
 
