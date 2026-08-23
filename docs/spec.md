@@ -5,21 +5,21 @@
 
 ## 1. 技術スタック
 
-| 分類 | 選定 |
-|---|---|
-| 言語 | TypeScript |
-| UIフレームワーク | React 18 |
-| ビルドツール | Vite |
-| PWA | `vite-plugin-pwa`（Workbox、`generateSW`戦略） |
-| 単体テスト | Vitest（+ Testing Library） |
-| E2Eテスト | Playwright（devcontainerにセットアップ済み） |
-| Lint/Format | ESLint + Prettier |
-| パッケージマネージャ | npm |
-| Google Drive連携 | Google Identity Services（GIS）によるブラウザ完結OAuth + Drive API v3（REST, `fetch`） |
-| ローカルデータ永続化 | IndexedDB（`idb`ライブラリ想定）＋ `localStorage` |
-| ホスティング | GitHub Pages（静的ビルド成果物を配信） |
+| 分類                 | 選定                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------- |
+| 言語                 | TypeScript                                                                             |
+| UIフレームワーク     | React 19                                                                               |
+| ビルドツール         | Vite 8                                                                                 |
+| PWA                  | `vite-plugin-pwa`（Workbox、`generateSW`戦略）                                         |
+| 単体テスト           | Vitest（+ Testing Library）                                                            |
+| E2Eテスト            | Playwright（devcontainerにセットアップ済み）                                           |
+| Lint/Format          | ESLint 10 + Prettier                                                                   |
+| パッケージマネージャ | npm                                                                                    |
+| Google Drive連携     | Google Identity Services（GIS）によるブラウザ完結OAuth + Drive API v3（REST, `fetch`） |
+| ローカルデータ永続化 | IndexedDB（`idb`ライブラリ想定）＋ `localStorage`                                      |
+| ホスティング         | GitHub Pages（静的ビルド成果物を配信）                                                 |
 
-devcontainerの`postCreateCommand`が`npm install && npx playwright install --with-deps chromium`を実行する構成に合わせている。
+devcontainerの`postCreateCommand`が`npm install && npx playwright install --with-deps chromium`を実行する構成に合わせている。バージョンはWP0（プロジェクト初期セットアップ）着手時点（2026-08-23）の各ツールの最新安定版を採用した。
 
 ## 2. システム構成概要
 
@@ -122,26 +122,26 @@ ondoku/
 ```typescript
 // コンテンツ（TSV由来、IndexedDBにキャッシュ）
 interface Content {
-  id: number;               // 通し番号（1〜560）
-  categoryId: string;       // セクション番号
+  id: number; // 通し番号（1〜560）
+  categoryId: string; // セクション番号
   englishText: string;
   japaneseText: string;
-  audioFileName: string;    // 拡張子込み（例: "001.opus"）
+  audioFileName: string; // 拡張子込み（例: "001.opus"）
 }
 
 // 練習履歴（コンテンツごと、IndexedDB）
 interface PracticeRecord {
   contentId: number;
-  repeatingCount: number;   // リピーティングモードでの練習回数
-  shadowingCount: number;   // シャドーイングモードでの練習回数
-  lastPracticedAt: string;  // ISO 8601日時
+  repeatingCount: number; // リピーティングモードでの練習回数
+  shadowingCount: number; // シャドーイングモードでの練習回数
+  lastPracticedAt: string; // ISO 8601日時
   isFavorite: boolean;
 }
 // 合計練習回数（頻度グリッド等で使用）は repeatingCount + shadowingCount として都度算出する
 
 // 日次練習ログ（連続学習日数の算出用、IndexedDB）
 interface DailyLog {
-  date: string;              // "YYYY-MM-DD"（ローカルタイムゾーン基準）
+  date: string; // "YYYY-MM-DD"（ローカルタイムゾーン基準）
 }
 
 // 音声キャッシュ（IndexedDB、Blobとして保持）
@@ -153,12 +153,12 @@ interface AudioCacheEntry {
 }
 
 // 練習モード関連の型
-type PracticeMode = 'repeating' | 'shadowing';
+type PracticeMode = "repeating" | "shadowing";
 
 // 出題順序は排他的なenumではなく、独立した2つのON/OFFスイッチで表現する
 interface OrderSettings {
-  isRandom: boolean;      // OFF=順次再生、ON=ランダム再生
-  isRepeatOne: boolean;   // OFF=自動で次に進む、ON=1リピート再生（自動では進まない）
+  isRandom: boolean; // OFF=順次再生、ON=ランダム再生
+  isRepeatOne: boolean; // OFF=自動で次に進む、ON=1リピート再生（自動では進まない）
 }
 
 // 練習中の一時状態（localStorage）
@@ -166,11 +166,11 @@ interface PracticeSessionState {
   practiceMode: PracticeMode;
   orderSettings: OrderSettings;
   filter: {
-    categoryId: string | null;   // nullは絞り込みなし
+    categoryId: string | null; // nullは絞り込みなし
     favoritesOnly: boolean;
   };
   currentContentId: number;
-  shuffledHistory?: number[];    // isRandom=trueのときにこのセッションで再生したcontentIdの履歴（「前へ」で1つ戻るために使用）
+  shuffledHistory?: number[]; // isRandom=trueのときにこのセッションで再生したcontentIdの履歴（「前へ」で1つ戻るために使用）
 }
 
 // Drive接続設定（localStorage）
@@ -190,9 +190,9 @@ interface DriveSettings {
 
 ### 5.3 localStorageキー
 
-| キー | 内容 |
-|---|---|
-| `ondoku:driveSettings` | `DriveSettings` |
+| キー                          | 内容                   |
+| ----------------------------- | ---------------------- |
+| `ondoku:driveSettings`        | `DriveSettings`        |
 | `ondoku:practiceSessionState` | `PracticeSessionState` |
 
 > Googleの認証トークン（アクセストークン）はlocalStorageに保存せず、メモリ上でのみ保持する。アプリ再起動時はGISのサイレント再認証（`prompt: ''`）を試み、失敗した場合のみログイン画面を表示する。
@@ -204,13 +204,13 @@ interface DriveSettings {
 - 1行目: ヘッダー行（列名）。ヘッダーの実際の値は実装時にユーザーが用意している実データに合わせて確定する
 - 列構成（要件定義書4.3節に対応）:
 
-| 列順 | 論理名 | `Content`のフィールド |
-|---|---|---|
-| 1 | 通し番号 | `id`（数値） |
-| 2 | カテゴリ（セクション番号） | `categoryId`（文字列） |
-| 3 | 英文テキスト | `englishText` |
-| 4 | 日本語訳テキスト | `japaneseText` |
-| 5 | 音声ファイル名（拡張子込み） | `audioFileName` |
+| 列順 | 論理名                       | `Content`のフィールド  |
+| ---- | ---------------------------- | ---------------------- |
+| 1    | 通し番号                     | `id`（数値）           |
+| 2    | カテゴリ（セクション番号）   | `categoryId`（文字列） |
+| 3    | 英文テキスト                 | `englishText`          |
+| 4    | 日本語訳テキスト             | `japaneseText`         |
+| 5    | 音声ファイル名（拡張子込み） | `audioFileName`        |
 
 - パーサーは`src/domain/tsv.ts`に純粋関数として実装し、Vitestで単体テストする（不正行・空行のスキップ、列数不一致時のエラー等を扱う）
 
@@ -246,13 +246,13 @@ interface DriveSettings {
 
 MIMEタイプ対応表（初期実装分、拡張子は小文字化して判定）:
 
-| 拡張子 | MIMEタイプ |
-|---|---|
-| `.opus` | `audio/ogg; codecs=opus` |
-| `.mp3` | `audio/mpeg` |
-| `.m4a` | `audio/mp4` |
-| `.wav` | `audio/wav` |
-| その他 | `application/octet-stream`（再生できない可能性がある旨をログ出力） |
+| 拡張子  | MIMEタイプ                                                         |
+| ------- | ------------------------------------------------------------------ |
+| `.opus` | `audio/ogg; codecs=opus`                                           |
+| `.mp3`  | `audio/mpeg`                                                       |
+| `.m4a`  | `audio/mp4`                                                        |
+| `.wav`  | `audio/wav`                                                        |
+| その他  | `application/octet-stream`（再生できない可能性がある旨をログ出力） |
 
 > **リスク**: `.opus`単体ファイル（Ogg/WebMコンテナでない生のOpusストリーム）は、`<audio>`要素での再生がブラウザにより非対応の場合がある。実装フェーズで実データの実ファイル形式（Ogg-OpusコンテナかRaw Opusか）を確認し、必要であれば`audio/ogg; codecs=opus`以外のMIMEタイプや変換要否を検討する（9章「今後確定させる事項」参照）。
 
