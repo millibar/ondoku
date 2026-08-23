@@ -4,7 +4,9 @@ dist/
 # （postCreateCommandで再生成される、環境固有のディレクトリ）
 /.claude
 dist-ssr/
+dev-dist/
 *.local
+*.tsbuildinfo
 
 # エディタ・OS
 .vscode/*
