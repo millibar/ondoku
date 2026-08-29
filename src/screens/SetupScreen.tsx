@@ -29,7 +29,7 @@ export function SetupScreen({ onComplete }: SetupScreenProps) {
         value={folderId}
         onChange={(event) => setFolderId(event.target.value)}
       />
-      <button type="submit" disabled={trimmed === ""}>
+      <button type="submit" className="button--primary" disabled={trimmed === ""}>
         次へ
       </button>
     </form>

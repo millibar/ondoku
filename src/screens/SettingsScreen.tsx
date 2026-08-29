@@ -26,7 +26,7 @@ export function SettingsScreen({ currentFolderId, onSave, onLogout, onBack }: Se
         <h1>設定</h1>
       </header>
 
-      <form onSubmit={handleSubmit}>
+      <form className="settings-screen__form" onSubmit={handleSubmit}>
         <label htmlFor="settingsRootFolderId">Google DriveのフォルダID</label>
         <input
           id="settingsRootFolderId"
@@ -34,10 +34,16 @@ export function SettingsScreen({ currentFolderId, onSave, onLogout, onBack }: Se
           value={folderId}
           onChange={(event) => setFolderId(event.target.value)}
         />
-        <button type="submit">保存</button>
+        <button type="submit" className="button--primary">
+          保存
+        </button>
       </form>
 
-      <button type="button" onClick={onLogout}>
+      <button
+        type="button"
+        className="button--danger settings-screen__logout"
+        onClick={onLogout}
+      >
         ログアウト
       </button>
     </div>

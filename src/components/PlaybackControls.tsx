@@ -28,16 +28,21 @@ export function PlaybackControls({
       <button type="button" onClick={onPrev}>
         前へ
       </button>
-      <button type="button" onClick={onPlay} disabled={!isStopped}>
+      <button type="button" className="button--primary" onClick={onPlay} disabled={!isStopped}>
         再生
       </button>
-      <button type="button" onClick={onStop} disabled={isStopped}>
+      <button type="button" className="button--primary" onClick={onStop} disabled={isStopped}>
         停止
       </button>
       <button type="button" onClick={onNext}>
         次へ
       </button>
-      <button type="button" onClick={onToggleFavorite} aria-pressed={isFavorite}>
+      <button
+        type="button"
+        className="button--favorite"
+        onClick={onToggleFavorite}
+        aria-pressed={isFavorite}
+      >
         {isFavorite ? "お気に入りから解除" : "お気に入りに追加"}
       </button>
     </div>

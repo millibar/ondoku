@@ -106,19 +106,26 @@ export function ContentListScreen({
       <ul className="content-list-screen__list">
         {filteredItems.map((item) => (
           <li key={item.id}>
-            <button type="button" onClick={() => onSelect(item.id)}>
-              {item.englishText}
-            </button>
-            <span>
-              リピーティング: {item.repeatingCount}回 / シャドーイング: {item.shadowingCount}回
-            </span>
             <button
               type="button"
-              aria-pressed={item.isFavorite}
-              onClick={() => onToggleFavorite(item.id)}
+              className="content-list-screen__item-select"
+              onClick={() => onSelect(item.id)}
             >
-              {item.isFavorite ? "お気に入りから解除" : "お気に入りに追加"}
+              {item.englishText}
             </button>
+            <div className="content-list-screen__item-footer">
+              <span className="content-list-screen__item-meta">
+                リピーティング: {item.repeatingCount}回 / シャドーイング: {item.shadowingCount}回
+              </span>
+              <button
+                type="button"
+                className="button--favorite"
+                aria-pressed={item.isFavorite}
+                onClick={() => onToggleFavorite(item.id)}
+              >
+                {item.isFavorite ? "お気に入りから解除" : "お気に入りに追加"}
+              </button>
+            </div>
           </li>
         ))}
       </ul>
