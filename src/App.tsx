@@ -226,7 +226,7 @@ function App() {
 
   switch (screen.name) {
     case "loading":
-      return <p>読み込み中...</p>;
+      return <p className="app-status-message">読み込み中...</p>;
 
     case "login":
       return <LoginScreen onLogin={handleLogin} errorMessage={loginError} />;
@@ -246,7 +246,7 @@ function App() {
 
     case "syncing":
       return (
-        <p>
+        <p className="app-status-message">
           同期中...
           {syncProgress ? ` ${syncProgress.completedCount}/${syncProgress.totalCount}` : ""}
         </p>
@@ -420,7 +420,7 @@ function PracticeContainer({
       {/* 再生用の非表示audio要素 */}
       <audio ref={audioElRef} style={{ display: "none" }} />
       {!audioReady || !currentContent ? (
-        <p>音声を準備中...</p>
+        <p className="app-status-message">音声を準備中...</p>
       ) : (
         <PracticeScreen
           content={currentContent}

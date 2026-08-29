@@ -1,17 +1,532 @@
+/* ==========================================================================
+   デザイントークン
+   参照: docs/spec.md 9.3節（頻度グリッドの配色）、8.4節（再生中/待機中の区別）
+   ========================================================================== */
 :root {
   color-scheme: light dark;
+
+  --color-bg: #f7f7fb;
+  --color-surface: #ffffff;
+  --color-border: #e3e4ec;
+  --color-text: #1f2230;
+  --color-text-muted: #6b7080;
+
+  --color-primary: #4338ca;
+  --color-primary-hover: #362d9c;
+  --color-primary-light: #eceafd;
+
+  --color-favorite: #f59e0b;
+  --color-favorite-bg: #fef3e2;
+
+  --color-danger: #dc2626;
+  --color-danger-bg: #fdecec;
+
+  --grid-level-0: #e5e7eb;
+  --grid-level-1: #c7d2fe;
+  --grid-level-2: #a5b4fc;
+  --grid-level-3: #818cf8;
+  --grid-level-4: #4338ca;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(31, 34, 48, 0.06);
+  --shadow-md: 0 8px 24px rgba(31, 34, 48, 0.08);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #14151d;
+    --color-surface: #1c1e29;
+    --color-border: #30323f;
+    --color-text: #e9e9f0;
+    --color-text-muted: #9497a8;
+
+    --color-primary-hover: #5951d8;
+    --color-primary-light: #262a4f;
+
+    --color-favorite-bg: #40310f;
+
+    --color-danger: #f87171;
+    --color-danger-bg: #3a1f22;
+
+    --grid-level-0: #2b2d3a;
+    --grid-level-1: #38348f;
+    --grid-level-2: #4c46b0;
+    --grid-level-3: #6f68d8;
+    --grid-level-4: #a5b0ff;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ==========================================================================
+   リセット・基本タイポグラフィ
+   ========================================================================== */
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family:
     system-ui,
     -apple-system,
     "Hiragino Kaku Gothic ProN",
     "Yu Gothic",
     sans-serif;
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1 {
+  font-size: 1.375rem;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* アプリ全体の「読み込み中...」「同期中...」表示。参照: src/App.tsx */
+.app-status-message {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* ==========================================================================
+   共通フォーム部品
+   ========================================================================== */
+button {
+  font: inherit;
+  cursor: pointer;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.05s ease;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 選択中トグル（練習モード切り替えなど）。参照: docs/spec.md 4章 */
+button[aria-pressed="true"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* お気に入りボタン専用の配色（選択中トグルと区別するため琥珀色にする） */
+.button--favorite[aria-pressed="true"] {
+  background: var(--color-favorite-bg);
+  border-color: var(--color-favorite);
+  color: var(--color-favorite);
+}
+
+.button--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  color: #fff;
+}
+
+.button--danger {
+  background: transparent;
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.button--danger:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+input[type="text"] {
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--color-primary);
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+select {
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+}
+
+[role="alert"] {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+/* ==========================================================================
+   画面共通レイアウト
+   ========================================================================== */
+.content-list-screen,
+.practice-screen,
+.settings-screen {
+  min-height: 100dvh;
+  max-width: 640px;
+  margin-inline: auto;
+  padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* コンテンツ一覧・練習・設定画面のヘッダーを上部固定にする */
+.content-list-screen > header,
+.practice-screen > header,
+.settings-screen > header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin-inline: -16px;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.settings-screen > header h1 {
+  flex: 1;
+}
+
+.settings-screen__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.settings-screen__logout {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* ログイン・初期セットアップ画面は中央寄せのカード風レイアウトにする */
+.login-screen,
+.setup-screen {
+  min-height: 100dvh;
+  max-width: 420px;
+  margin-inline: auto;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.login-screen h1,
+.setup-screen h1 {
+  text-align: center;
+}
+
+.login-screen > p,
+.setup-screen > p {
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.setup-screen label {
+  text-align: left;
+}
+
+/* ==========================================================================
+   コンテンツ一覧画面
+   参照: docs/spec.md 4章、5.2節
+   ========================================================================== */
+.content-list-screen > header h1 {
+  width: 100%;
+}
+
+/* 連続学習日数（ヘッダー内の最初のp要素） */
+.content-list-screen > header p:first-of-type {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.content-list-screen__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+
+.content-list-screen__filters label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.content-list-screen__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.content-list-screen__list li {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.content-list-screen__item-select {
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  border-radius: 0;
+}
+
+.content-list-screen__item-select:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: transparent;
+}
+
+.content-list-screen__item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.content-list-screen__item-meta {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   練習画面
+   参照: docs/spec.md 4章、5.3節
+   ========================================================================== */
+.practice-screen__mode-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+
+.practice-screen__mode-settings [role="group"] {
+  display: flex;
+  gap: 8px;
+}
+
+.practice-screen__mode-settings label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.practice-screen__display-toggles {
+  display: flex;
+  gap: 10px;
+}
+
+.practice-screen__display-toggles button {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+/* ==========================================================================
+   英文・日本語訳表示
+   参照: docs/spec.md 5.3節
+   ========================================================================== */
+.content-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  min-height: 140px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.content-text__english {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.content-text__japanese {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* ==========================================================================
+   プログレスバー
+   参照: docs/spec.md 8.4節（再生中と待機中を色で区別する）
+   ========================================================================== */
+.progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+  transition: width 0.1s linear;
+}
+
+.progress-bar[data-status="waiting"] .progress-bar__fill {
+  background: var(--color-favorite);
+}
+
+.progress-bar[data-status="stopped"] .progress-bar__fill {
+  background: var(--color-border);
+}
+
+/* ==========================================================================
+   再生コントロール
+   参照: docs/spec.md 5.3.1節
+   ========================================================================== */
+.playback-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.playback-controls .button--primary {
+  min-width: 72px;
+  border-radius: 999px;
+}
+
+/* ==========================================================================
+   頻度グリッド（GitHubのコントリビューショングラフのイメージ）
+   参照: docs/spec.md 9.3節
+   ========================================================================== */
+.frequency-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10px, 1fr));
+  gap: 3px;
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.frequency-grid__cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 2px;
+  background: var(--grid-level-0);
+}
+
+.frequency-grid__cell[data-level="1"] {
+  background: var(--grid-level-1);
+}
+
+.frequency-grid__cell[data-level="2"] {
+  background: var(--grid-level-2);
+}
+
+.frequency-grid__cell[data-level="3"] {
+  background: var(--grid-level-3);
+}
+
+.frequency-grid__cell[data-level="4"] {
+  background: var(--grid-level-4);
 }
