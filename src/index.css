@@ -471,14 +471,15 @@ select {
 }
 
 /* リピーティングモードの待機中は、再生中と逆の見え方にする:
-   track（残り時間）をアクティブ色のままにし、経過時間をグレーで左から右に
-   塗りつぶす。結果としてアクティブ色の部分は右側に縮んでいくように見える */
+   track（残り時間）をアクティブ色のままにし、経過時間を非アクティブ色
+   （通常のtrackやstopped状態と同じ色）で左から右に塗りつぶす。結果として
+   アクティブ色の部分は右側に縮んでいくように見える */
 .progress-bar[data-status="waiting"] {
   background: var(--color-primary);
 }
 
 .progress-bar[data-status="waiting"] .progress-bar__fill {
-  background: var(--color-text-muted);
+  background: var(--color-border);
 }
 
 .progress-bar[data-status="stopped"] .progress-bar__fill {
