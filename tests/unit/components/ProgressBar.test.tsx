@@ -25,4 +25,18 @@ describe("ProgressBar", () => {
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
     expect(screen.getByRole("progressbar")).toHaveAttribute("data-status", "stopped");
   });
+
+  // 参照: 次のコンテンツへの遷移時、進捗バーが右から左に縮むアニメーションを
+  // 見せず瞬時にリセットされるようにするための回帰テスト
+  it("progress=0のとき、バーのトランジションが無効化され瞬時にリセットされる", () => {
+    render(<ProgressBar status="playing" progress={0} />);
+    const fill = screen.getByRole("progressbar").firstElementChild as HTMLElement;
+    expect(fill.style.transition).toBe("none");
+  });
+
+  it("progress>0のとき、バーのトランジションは無効化されず、CSS側の設定（なめらかに伸びる）が適用される", () => {
+    render(<ProgressBar status="playing" progress={0.5} />);
+    const fill = screen.getByRole("progressbar").firstElementChild as HTMLElement;
+    expect(fill.style.transition).toBe("");
+  });
 });

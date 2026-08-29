@@ -20,7 +20,14 @@ export function ProgressBar({ status, progress }: ProgressBarProps) {
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      <div className="progress-bar__fill" style={{ width: `${percent}%` }} />
+      <div
+        className="progress-bar__fill"
+        // progress=0への巻き戻り（次のコンテンツへの遷移・停止）はCSSの
+        // トランジションを無効化し、右から左に縮むアニメーションを見せず
+        // 瞬時にリセットする。0より大きい間は通常どおりCSS側のトランジション
+        // （.progress-bar__fill）に任せ、なめらかに伸びるようにする
+        style={{ width: `${percent}%`, transition: percent === 0 ? "none" : undefined }}
+      />
     </div>
   );
 }
