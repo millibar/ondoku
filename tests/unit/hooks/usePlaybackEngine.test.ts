@@ -1,7 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { usePlaybackEngine } from "../../../src/hooks/usePlaybackEngine";
-import type { AudioPlayer } from "../../../src/hooks/audioPlayer";
+import {
+  usePlaybackEngine,
+  type UsePlaybackEngineOptions,
+} from "../../../src/hooks/usePlaybackEngine";
+import { createNoopAudioPlayer, type AudioPlayer } from "../../../src/hooks/audioPlayer";
 
 // 参照: docs/implementation-plan.md WP3.5、docs/spec.md 8章
 //
@@ -177,6 +180,42 @@ describe("usePlaybackEngine", () => {
     expect(result.current.currentContentId).toBe(2);
     expect(result.current.status).toBe("stopped");
     expect(player.play).not.toHaveBeenCalled();
+  });
+
+  it("<audio>要素のrefが後から確定してplayerがnoopから実プレイヤーへ差し替わっても、差し替え後のplayerの再生終了で自動的に次へ進む（App.tsxの実際の初期化順序を再現）", () => {
+    const realPlayer = createFakePlayer();
+    const { result, rerender } = renderHook(
+      (props: UsePlaybackEngineOptions) => usePlaybackEngine(props),
+      {
+        initialProps: {
+          playlist: [1, 2, 3],
+          practiceMode: "shadowing",
+          orderSettings: { isRandom: false, isRepeatOne: false },
+          initialContentId: 1,
+          player: createNoopAudioPlayer(), // マウント直後は<audio>要素のrefが未確定のためnoop
+          getAudioUrl,
+          onPlaybackCompleted: vi.fn(),
+        },
+      },
+    );
+
+    // <audio>要素のrefが確定し、実プレイヤーに差し替わる（App.tsx PracticeContainer参照）
+    rerender({
+      playlist: [1, 2, 3],
+      practiceMode: "shadowing",
+      orderSettings: { isRandom: false, isRepeatOne: false },
+      initialContentId: 1,
+      player: realPlayer,
+      getAudioUrl,
+      onPlaybackCompleted: vi.fn(),
+    });
+
+    act(() => result.current.play());
+    act(() => realPlayer.triggerEnded());
+
+    expect(result.current.status).toBe("playing");
+    expect(result.current.currentContentId).toBe(2);
+    expect(realPlayer.play).toHaveBeenLastCalledWith("blob://content-2");
   });
 
   it("1リピート再生ONの場合、再生終了しても同じコンテンツが繰り返し再生される", () => {
