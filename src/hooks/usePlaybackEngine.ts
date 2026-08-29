@@ -141,16 +141,20 @@ export function usePlaybackEngine(options: UsePlaybackEngineOptions): PlaybackEn
     handleAdvanceRef.current = handleAdvance;
   });
 
-  // 手本音声の再生終了イベントを購読する（マウント時に一度だけ）
+  // 手本音声の再生終了イベントを購読する。
+  // <audio>要素のrefはマウント直後は未確定で、App.tsx側ではまず
+  // createNoopAudioPlayer()が渡され、ref確定後に実プレイヤーへ差し替わる。
+  // options.playerをdepsに含めて差し替えのたびに再購読しないと、noopプレイヤーに
+  // 購読したままになり、実際の再生終了イベントが一切ハンドラに届かなくなる
+  // （自動的に次のコンテンツへ進まなくなるバグの原因だった）。
   useEffect(() => {
-    const unsubscribe = optionsRef.current.player.onEnded(() => {
+    const unsubscribe = options.player.onEnded(() => {
       clearWaitTimer();
       optionsRef.current.onPlaybackCompleted(stateRef.current.currentContentId);
       handleAdvance("AUDIO_ENDED");
     });
     return unsubscribe;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [options.player, clearWaitTimer, handleAdvance]);
 
   // アンマウント時にタイマーを片付ける
   useEffect(() => {

@@ -39,11 +39,7 @@ export function SettingsScreen({ currentFolderId, onSave, onLogout, onBack }: Se
         </button>
       </form>
 
-      <button
-        type="button"
-        className="button--danger settings-screen__logout"
-        onClick={onLogout}
-      >
+      <button type="button" className="button--danger settings-screen__logout" onClick={onLogout}>
         ログアウト
       </button>
     </div>
