@@ -480,6 +480,10 @@ select {
 
 .progress-bar[data-status="waiting"] .progress-bar__fill {
   background: var(--color-border);
+  /* 進行方向側（右端）を角丸のままにすると、隣接するアクティブ色（track）側に
+     凹んだように見えてしまうため直角にする。track の左端に接する側のみ
+     角丸を残し、境界と滑らかにつながるようにする */
+  border-radius: 999px 0 0 999px;
 }
 
 .progress-bar[data-status="stopped"] .progress-bar__fill {
