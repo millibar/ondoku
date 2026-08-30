@@ -7,9 +7,9 @@ import {
   getAllPracticeRecords,
   getAudioBlob,
   getPracticeRecord,
+  incrementDailyLog,
   incrementPracticeCount,
   setFavorite as setFavoriteRecord,
-  upsertDailyLog,
 } from "./data/db";
 import {
   getDriveSettings,
@@ -382,7 +382,7 @@ function PracticeContainer({
       void (async () => {
         const now = new Date().toISOString();
         await incrementPracticeCount(contentId, practiceMode, now);
-        await upsertDailyLog(now.slice(0, 10));
+        await incrementDailyLog(now.slice(0, 10), practiceMode);
       })();
     },
     [practiceMode],
@@ -402,7 +402,6 @@ function PracticeContainer({
     savePracticeSessionState({
       practiceMode,
       orderSettings,
-      filter: { categoryId: null, favoritesOnly: false },
       currentContentId: engine.currentContentId,
     });
   }, [practiceMode, orderSettings, engine.currentContentId]);

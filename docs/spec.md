@@ -199,14 +199,19 @@ interface OrderSettings {
   isRepeatOne: boolean; // OFF=自動で次に進む、ON=1リピート再生（自動では進まない）
 }
 
-// 練習中の一時状態（localStorage）
+// 練習中の一時状態（localStorage）。練習セッション固有の状態のみを持つ
 interface PracticeSessionState {
   practiceMode: PracticeMode;
   orderSettings: OrderSettings;
-  selectedContentIds: number[]; // 英文選択画面の「練習対象」チェックボックスでONの英文ID一覧（＝出題範囲）
-  favoritesOnly: boolean; // 練習画面の「お気に入りのみ表示」チェックボックスの状態（練習画面固有。英文選択画面とは共有しない）
   currentContentId: number;
   shuffledHistory?: number[]; // isRandom=trueのときにこのセッションで再生したcontentIdの履歴（「前へ」で1つ戻るために使用）
+}
+
+// 出題範囲の選択状態（localStorage）。英文選択画面・練習画面の両方から参照・更新するため、
+// 画面固有ではなくPracticeSessionStateとは別の型・別のlocalStorageキーで管理する
+interface SelectionState {
+  selectedContentIds: number[]; // 英文選択画面の「練習対象」チェックボックスでONの英文ID一覧（＝出題範囲）
+  favoritesOnly: boolean; // 練習画面の「お気に入りのみ表示」チェックボックスの状態（練習画面固有の操作だが、値自体はSelectionStateとして永続化する）
 }
 // 出題範囲（プレイリスト）は selectedContentIds のうち、favoritesOnly=true の場合は
 // さらに isFavorite=true のコンテンツのみに絞り込んだものとして都度算出する（8章参照）
@@ -237,6 +242,7 @@ interface DriveSettings {
 | ----------------------------- | ---------------------- |
 | `ondoku:driveSettings`        | `DriveSettings`        |
 | `ondoku:practiceSessionState` | `PracticeSessionState` |
+| `ondoku:selectionState`       | `SelectionState`       |
 
 > Googleの認証トークン（アクセストークン）はlocalStorageに保存せず、メモリ上でのみ保持する。アプリ再起動時はGISのサイレント再認証（`prompt: ''`）を試み、失敗した場合のみログイン画面を表示する。
 

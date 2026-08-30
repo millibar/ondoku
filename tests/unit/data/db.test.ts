@@ -7,11 +7,11 @@ import {
   getContent,
   getPracticeRecord,
   hasAudioBlob,
+  incrementDailyLog,
   incrementPracticeCount,
   saveAudioBlob,
   setFavorite,
   upsertContents,
-  upsertDailyLog,
 } from "../../../src/data/db";
 
 // 参照: docs/test-plan.md 4.5節
@@ -100,16 +100,22 @@ describe("practiceRecordsストア", () => {
 });
 
 describe("dailyLogsストア", () => {
-  it("同じ日付で複数回Upsertしても1件のまま", async () => {
-    await upsertDailyLog("2026-08-23");
-    await upsertDailyLog("2026-08-23");
+  it("初回incrementDailyLog（repeating）でレコードが作成され、repeatingCountが1になる", async () => {
+    const log = await incrementDailyLog("2026-08-23", "repeating");
+    expect(log).toEqual({ date: "2026-08-23", repeatingCount: 1, shadowingCount: 0 });
+  });
+
+  it("同じ日付で複数回呼んでも1件のまま、モード別カウントが積み上がる", async () => {
+    await incrementDailyLog("2026-08-23", "repeating");
+    await incrementDailyLog("2026-08-23", "repeating");
+    await incrementDailyLog("2026-08-23", "shadowing");
     const logs = await getAllDailyLogs();
-    expect(logs).toEqual([{ date: "2026-08-23" }]);
+    expect(logs).toEqual([{ date: "2026-08-23", repeatingCount: 2, shadowingCount: 1 }]);
   });
 
   it("異なる日付は別レコードとして保存される", async () => {
-    await upsertDailyLog("2026-08-22");
-    await upsertDailyLog("2026-08-23");
+    await incrementDailyLog("2026-08-22", "shadowing");
+    await incrementDailyLog("2026-08-23", "repeating");
     const logs = await getAllDailyLogs();
     expect(logs.map((l) => l.date).sort()).toEqual(["2026-08-22", "2026-08-23"]);
   });

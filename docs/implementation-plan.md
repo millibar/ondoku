@@ -174,7 +174,16 @@ WP0〜WP5でひととおり動作するアプリが完成した後、`docs/requi
   - `App.tsx`内`upsertDailyLog`呼び出し → `incrementDailyLog`に置き換え
   - `PracticeContainer`の`savePracticeSessionState`呼び出しから`filter`を削除
 - **完了条件**: 上記の型・データ層・ドメインロジックの変更を行い、新規ロジックの単体テストが全て成功、既存テスト（`upsertDailyLog`関連は`incrementDailyLog`向けに書き換え）もすべて成功、lint・buildが通ること
-- **状況**: 未着手
+- **状況**: ✅ 完了（2026-08-30、`feature/restructure-domain-data`ブランチ）
+  - `types/index.ts`: `DailyLog`にモード別カウント追加、`PracticeSessionState`を練習セッション固有の状態のみに整理し、新規`SelectionState`型（`selectedContentIds`・`favoritesOnly`）を追加
+  - `data/db.ts`: `upsertDailyLog` → `incrementDailyLog(date, mode)`に変更
+  - `data/localStorage.ts`: `SelectionState`用に`getSelectionState`/`saveSelectionState`を追加（キー: `ondoku:selectionState`）
+  - `domain/selection.ts`（新規）: `buildPlaylist` — 出題範囲をid昇順で算出
+  - `domain/dailyGrid.ts`（新規）: `buildDailySeries` — 直近N日分の日別カウント配列を欠損日0件埋めで算出
+  - `App.tsx`の`upsertDailyLog`呼び出し・`savePracticeSessionState`の`filter`指定を追随修正（本格配線はWP10）
+  - レッド・グリーン・リファクタリングで実装。新規テスト18件を含む単体テスト162件すべて成功、lint・format・buildも成功を確認済み
+  - あわせて`docs/spec.md`のデータモデル（5.1・5.3節）を実装内容（`SelectionState`の型分割）に合わせて更新
+  - `main`へのマージはユーザー承認待ち
 
 ## 5. GitHub Pagesへのデプロイ方針
 
