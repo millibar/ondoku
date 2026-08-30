@@ -119,12 +119,25 @@ export function PracticeScreen({
         </label>
       </div>
 
-      {/* 3. カテゴリ */}
+      {/* 3. プログレスバー */}
+      <ProgressBar status={playbackStatus} progress={progress} />
+
+      {/* 4. 前へ・再生・停止・次へボタン */}
+      <PlaybackControls
+        status={playbackStatus}
+        disabled={content === null}
+        onPlay={onPlay}
+        onStop={onStop}
+        onNext={onNext}
+        onPrev={onPrev}
+      />
+
+      {/* 5. カテゴリ */}
       <p className="practice-screen__category">
         {content ? `カテゴリ ${content.categoryId}` : "-"}
       </p>
 
-      {/* 4. 通し番号・お気に入りボタン */}
+      {/* 6. 通し番号・お気に入りボタン */}
       <div className="practice-screen__content-meta">
         <span className="practice-screen__content-number">{content ? `#${content.id}` : "-"}</span>
         <button
@@ -138,18 +151,7 @@ export function PracticeScreen({
         </button>
       </div>
 
-      <ProgressBar status={playbackStatus} progress={progress} />
-
-      <PlaybackControls
-        status={playbackStatus}
-        disabled={content === null}
-        onPlay={onPlay}
-        onStop={onStop}
-        onNext={onNext}
-        onPrev={onPrev}
-      />
-
-      {/* 5. 英文・日本語訳（文字数でカードの高さが変わるため最後に配置する） */}
+      {/* 7. 英文・日本語訳（文字数でカードの高さが変わるため最後に配置する） */}
       {content ? (
         <ContentText englishText={content.englishText} japaneseText={content.japaneseText} />
       ) : (

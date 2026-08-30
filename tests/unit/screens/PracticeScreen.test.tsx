@@ -45,20 +45,22 @@ describe("PracticeScreen", () => {
     expect(screen.getByText("こんにちは世界。")).toBeInTheDocument();
   });
 
-  it("英文・日本語訳より上に、モード切替・番号/総数・カテゴリ・通し番号が並ぶ（この順）", () => {
+  it("モード切替・番号/総数・プログレスバー・再生コントロール・カテゴリ・通し番号・英文の順に並ぶ", () => {
     // 英文は文字数でカードの高さが変わるため、他の操作UIより下（末尾）に
     // 配置し、UIの位置が英文ごとに動かないようにする。参照: docs/spec.md 5.3節
     const { container } = renderScreen();
     const text = container.textContent ?? "";
     const modeToggleIndex = text.indexOf("リピーティング");
     const indexDisplayIndex = text.indexOf("1/560");
+    const playbackControlsIndex = text.indexOf("前へ");
     const categoryIndex = text.indexOf("カテゴリ 01");
     const contentNumberIndex = text.indexOf("#1");
     const englishTextIndex = text.indexOf("Hello world.");
 
     expect(modeToggleIndex).toBeGreaterThanOrEqual(0);
     expect(modeToggleIndex).toBeLessThan(indexDisplayIndex);
-    expect(indexDisplayIndex).toBeLessThan(categoryIndex);
+    expect(indexDisplayIndex).toBeLessThan(playbackControlsIndex);
+    expect(playbackControlsIndex).toBeLessThan(categoryIndex);
     expect(categoryIndex).toBeLessThan(contentNumberIndex);
     expect(contentNumberIndex).toBeLessThan(englishTextIndex);
   });
