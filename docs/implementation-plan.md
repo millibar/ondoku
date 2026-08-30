@@ -254,6 +254,7 @@ WP0〜WP5でひととおり動作するアプリが完成した後、`docs/requi
   - 旧`screens/ContentListScreen.tsx`とテストを削除、`components/README.md`・`screens/README.md`を更新
   - **実機確認で発見・修正した問題**: `npm run dev` + Playwrightで実際にIndexedDBへデータを投入して確認したところ、初回起動時（コンテンツが空の段階）で`SelectionState`永続化用のeffectが空の状態を`localStorage`へ書き込んでしまい、後から同期が完了しても「全件選択をデフォルトにする」判定が正しく働かない不具合を発見。コンテンツが実際に読み込まれるまで永続化を保留する`selectionReadyRef`を追加して解消
   - lintで`react-hooks/refs`違反（レンダー中に別refの`.current`を読む）を検出・修正。`localStorage`の読み出しを`useState`の遅延初期化1回にまとめ、複数の`useRef`がそこから安全に初期値を得られるよう整理
+  - **ユーザー報告で発見・修正した問題**: マージ前レビューで「英文選択画面で画面下のタブが表示されない」と報告を受けて調査。`.app-shell`に`min-height: 100dvh`を指定していたため、英文選択画面のようにカード件数が多くコンテンツが長くなると、上限の無い`min-height`によりページ全体（`.app-shell`自体）が縦に伸びてタブバーごと下へ押し出されてしまうことが原因だった。`height: 100dvh`に変更し、スクロールを`.app-shell__content`側（`overflow-y: auto`）に閉じ込めることで解消。30件のダミーコンテンツを投入し、最下部までスクロールしてもタブバーが画面下部に固定表示されることを実機確認済み
   - 単体テスト191件すべて成功、lint・format・buildも成功を確認済み
   - `main`へのマージはユーザー承認待ち
 

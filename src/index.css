@@ -136,7 +136,10 @@ ul {
    参照: docs/spec.md 4章
    ========================================================================== */
 .app-shell {
-  min-height: 100dvh;
+  /* min-height だと中身が長いときに画面全体が伸びてタブバーごと下に
+     押し出されてしまう（英文選択画面などコンテンツが長い場合に発生）ため、
+     height で高さを固定し、スクロールを app-shell__content 側に閉じ込める */
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
