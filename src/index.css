@@ -385,18 +385,22 @@ select {
    英文選択画面
    参照: docs/spec.md 4.2節
    ========================================================================== */
-.content-selection-screen__filters {
+/* 画面上部の全カテゴリ一括選択・選択数サマリー */
+.content-selection-screen__summary {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px 16px;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-weight: 600;
 }
 
-.content-selection-screen__filters label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+.content-selection-screen__summary-count {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 0.875rem;
 }
 
 .content-selection-screen__category {
@@ -414,6 +418,43 @@ select {
 .content-selection-screen__category-header h2 {
   font-size: 1rem;
   margin: 0;
+}
+
+/* カテゴリ見出しの開閉トグルボタン。見出しテキスト全体をクリック対象にする */
+.content-selection-screen__category-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.content-selection-screen__category-toggle:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: transparent;
+}
+
+/* 開閉状態を示す三角アイコン（▸/▾） */
+.content-selection-screen__category-toggle::before {
+  content: "▸";
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  transition: transform 0.15s ease;
+}
+
+.content-selection-screen__category-toggle[aria-expanded="true"]::before {
+  transform: rotate(90deg);
+}
+
+.content-selection-screen__category-count {
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
 }
 
 .content-selection-screen__list {

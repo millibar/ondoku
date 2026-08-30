@@ -137,7 +137,7 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "英文選択" }));
 
-    expect(await screen.findByRole("heading", { name: "カテゴリ 01" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
   });
 
   it("練習履歴タブに切り替えると練習履歴画面（連続学習日数）が表示される", async () => {
@@ -161,7 +161,7 @@ describe("App", () => {
     render(<App />);
     await screen.findByText("Hello world.");
     fireEvent.click(screen.getByRole("button", { name: "英文選択" }));
-    await screen.findByRole("heading", { name: "カテゴリ 01" });
+    await screen.findByRole("heading", { name: /カテゴリ 01/ });
 
     fireEvent.click(screen.getByRole("button", { name: "設定" }));
     expect(await screen.findByLabelText("Google DriveのフォルダID")).toBeInTheDocument();
@@ -169,6 +169,6 @@ describe("App", () => {
     expect(screen.queryByRole("button", { name: "練習" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "閉じる" }));
-    expect(await screen.findByRole("heading", { name: "カテゴリ 01" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
   });
 });

@@ -38,6 +38,7 @@ function renderScreen(overrides: Partial<Parameters<typeof ContentSelectionScree
       selectedContentIds={[1, 2, 3]}
       onToggleContentSelection={vi.fn()}
       onToggleCategorySelection={vi.fn()}
+      onToggleAllSelection={vi.fn()}
       onToggleFavorite={vi.fn()}
       onOpenSettings={vi.fn()}
       {...overrides}
@@ -48,8 +49,17 @@ function renderScreen(overrides: Partial<Parameters<typeof ContentSelectionScree
 describe("ContentSelectionScreen", () => {
   it("カテゴリごとに見出しが表示され、配下に該当英文が表示される", () => {
     renderScreen();
-    expect(screen.getByRole("heading", { name: "カテゴリ 01" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "カテゴリ 02" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /カテゴリ 02/ })).toBeInTheDocument();
+    expect(screen.getByText("Hello world.")).toBeInTheDocument();
+    expect(screen.getByText("Good morning.")).toBeInTheDocument();
+  });
+
+  it("カテゴリ見出しに「選択中/総数」が表示される", () => {
+    renderScreen({ selectedContentIds: [1] });
+    // カテゴリ01は2件中1件選択、カテゴリ02は1件中0件選択
+    expect(screen.getByRole("heading", { name: /カテゴリ 01.*1\/2/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /カテゴリ 02.*0\/1/ })).toBeInTheDocument();
   });
 
   it("英文カードに通し番号・英文・回数が表示される", () => {
@@ -98,12 +108,59 @@ describe("ContentSelectionScreen", () => {
     expect(checkbox.indeterminate).toBe(true);
   });
 
-  it("カテゴリ絞り込みチェックボックスを外すと、そのカテゴリの英文が非表示になる", () => {
+  it("カテゴリ見出しをクリックすると、配下の英文カードの表示・非表示が切り替わる（既定は展開状態）", () => {
     renderScreen();
-    fireEvent.click(screen.getByLabelText("カテゴリ01を表示"));
+    const toggle = screen.getByRole("button", { name: /カテゴリ 01/ });
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("Hello world.")).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
-    expect(screen.queryByText("Good night.")).not.toBeInTheDocument();
+    // 他のカテゴリには影響しない
     expect(screen.getByText("Good morning.")).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("Hello world.")).toBeInTheDocument();
+  });
+
+  it("カテゴリ見出しの開閉クリックはチェックボックスの選択状態に影響しない", () => {
+    const onToggleCategorySelection = vi.fn();
+    const onToggleContentSelection = vi.fn();
+    renderScreen({ onToggleCategorySelection, onToggleContentSelection });
+    fireEvent.click(screen.getByRole("button", { name: /カテゴリ 01/ }));
+    expect(onToggleCategorySelection).not.toHaveBeenCalled();
+    expect(onToggleContentSelection).not.toHaveBeenCalled();
+  });
+
+  it("画面上部に「選択中/総数」（全カテゴリ合計）が表示される", () => {
+    renderScreen({ selectedContentIds: [1, 3] });
+    expect(screen.getByText("2/3")).toBeInTheDocument();
+  });
+
+  it("画面上部の全選択チェックボックスは、全件選択済みならchecked、クリックで全解除が呼ばれる", () => {
+    const onToggleAllSelection = vi.fn();
+    renderScreen({ selectedContentIds: [1, 2, 3], onToggleAllSelection });
+    const checkbox = screen.getByLabelText("すべて選択");
+    expect(checkbox).toBeChecked();
+    fireEvent.click(checkbox);
+    expect(onToggleAllSelection).toHaveBeenCalledWith(false);
+  });
+
+  it("画面上部の全選択チェックボックスは、未選択ならunchecked、クリックで全選択が呼ばれる", () => {
+    const onToggleAllSelection = vi.fn();
+    renderScreen({ selectedContentIds: [], onToggleAllSelection });
+    const checkbox = screen.getByLabelText("すべて選択");
+    expect(checkbox).not.toBeChecked();
+    fireEvent.click(checkbox);
+    expect(onToggleAllSelection).toHaveBeenCalledWith(true);
+  });
+
+  it("画面上部の全選択チェックボックスは、一部だけ選択済みの場合indeterminateになる", () => {
+    renderScreen({ selectedContentIds: [1] });
+    const checkbox = screen.getByLabelText("すべて選択") as HTMLInputElement;
+    expect(checkbox.indeterminate).toBe(true);
   });
 
   it("お気に入りボタンを押すとonToggleFavoriteが呼ばれる", () => {

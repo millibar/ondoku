@@ -304,6 +304,13 @@ function App() {
     });
   }
 
+  function handleToggleAllSelection(selected: boolean) {
+    setSelectionState((prev) => ({
+      ...prev,
+      selectedContentIds: selected ? contents.map((c) => c.id) : [],
+    }));
+  }
+
   function handleChangeFavoritesOnly(value: boolean) {
     setSelectionState((prev) => ({ ...prev, favoritesOnly: value }));
   }
@@ -415,6 +422,7 @@ function App() {
                 selectedContentIds={selectionState.selectedContentIds}
                 onToggleContentSelection={handleToggleContentSelection}
                 onToggleCategorySelection={handleToggleCategorySelection}
+                onToggleAllSelection={handleToggleAllSelection}
                 onToggleFavorite={(id) => void handleToggleFavorite(id)}
                 onOpenSettings={() => setShowSettings(true)}
               />
