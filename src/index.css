@@ -471,8 +471,28 @@ select {
 
 /* ==========================================================================
    練習画面
-   参照: docs/spec.md 4章、5.3節
+   参照: docs/spec.md 4.1節
    ========================================================================== */
+/* 連続学習日数（ヘッダー内のバッジ表示。コンテンツ一覧画面のものと共通の見た目） */
+.practice-screen__streak {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.practice-screen__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
 .practice-screen__mode-settings {
   display: flex;
   flex-wrap: wrap;

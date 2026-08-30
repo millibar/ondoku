@@ -283,6 +283,7 @@ function App() {
           contents={contents}
           initialContentId={screen.contentId}
           playlist={screen.playlist}
+          streak={streak}
           onBack={() => {
             setScreen({ name: "list" });
             void reloadFromDb();
@@ -317,11 +318,13 @@ function PracticeContainer({
   contents,
   initialContentId,
   playlist,
+  streak,
   onBack,
 }: {
   contents: Content[];
   initialContentId: number;
   playlist: number[];
+  streak: number;
   onBack: () => void;
 }) {
   // 練習状態の復元（仕様書5.5節）。ここでは簡略化し、フィルタ（出題範囲）の復元は行わない
@@ -332,6 +335,9 @@ function PracticeContainer({
     () => getPracticeSessionState()?.orderSettings ?? { isRandom: false, isRepeatOne: false },
   );
   const [isFavorite, setIsFavoriteState] = useState(false);
+  // お気に入りのみ表示: SelectionStateとの本格連動（出題範囲の絞り込み）はWP10で行う。
+  // WP8時点では見た目のみ動くプレースホルダーとする
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [player, setPlayer] = useState<AudioPlayer>(() => createNoopAudioPlayer());
 
@@ -418,6 +424,7 @@ function PracticeContainer({
   }
 
   const currentContent = contentsById.get(engine.currentContentId);
+  const currentIndex = playlist.indexOf(engine.currentContentId) + 1;
 
   return (
     <>
@@ -435,6 +442,11 @@ function PracticeContainer({
           playbackStatus={engine.status}
           progress={engine.progress}
           isFavorite={isFavorite}
+          currentIndex={currentIndex}
+          totalCount={playlist.length}
+          streak={streak}
+          favoritesOnly={favoritesOnly}
+          onChangeFavoritesOnly={setFavoritesOnly}
           onPlay={engine.play}
           onStop={engine.stop}
           onNext={engine.next}

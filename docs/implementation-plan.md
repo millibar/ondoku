@@ -200,6 +200,25 @@ WP0〜WP5でひととおり動作するアプリが完成した後、`docs/requi
 - **完了条件**: 上記画面のコンポーネントテストが成功、既存テスト・lint・format・buildがすべて成功すること
 - **状況**: ✅ 完了（2026-08-30、`feature/restructure-selection-screen`ブランチ）
   - レッド・グリーン・リファクタリングで実装。新規テスト10件・`SettingsScreen`向け追加テストを含む単体テスト175件すべて成功、lint・format・buildも成功を確認済み
+  - ✅ ユーザー承認を得て`main`へマージ済み（2026-08-30）
+
+### WP8: 練習画面の拡張（`feature/restructure-practice-screen`）
+
+- `screens/PracticeScreen.tsx`（仕様書4.1節）への追加
+  - 現在の英文の通し番号・カテゴリ（`content.id`・`content.categoryId`を表示。新規propsは不要）
+  - 出題範囲内の総数と現在のインデックス（新規props `currentIndex`・`totalCount`、「{currentIndex}/{totalCount}」形式で表示）
+  - 連続学習日数（新規props `streak`、`ContentListScreen`と同じ表現を踏襲）
+  - お気に入りのみ表示チェックボックス（新規props `favoritesOnly`・`onChangeFavoritesOnly`）
+  - 「戻る」ボタンは今回は変更しない（タブナビゲーション導入に伴う置き換えはWP10で行う。先に削除するとタブが無い間この画面から出られなくなるため）
+- `App.tsx`の追随修正
+  - `currentIndex`・`totalCount`は`playlist`と`engine.currentContentId`から実際に算出して本配線
+  - `streak`はApp.tsx側で計算済みの値を`PracticeContainer`経由でそのまま配線
+  - `favoritesOnly`は本格的な出題範囲フィルタとの連動をWP10に委ね、WP8では`PracticeContainer`内のローカルstateとする（見た目のみ動くプレースホルダー）
+- **完了条件**: `PracticeScreen`のコンポーネントテストが成功、既存テスト・lint・format・buildがすべて成功すること
+- **状況**: ✅ 完了（2026-08-30、`feature/restructure-practice-screen`ブランチ）
+  - `screens/PracticeScreen.tsx`: 通し番号・カテゴリ・「n/総数」・連続学習日数・お気に入りのみ表示チェックボックスを追加
+  - `App.tsx`: `currentIndex`/`totalCount`は`playlist`から実算出、`streak`は本配線、`favoritesOnly`は`PracticeContainer`内のローカルstateとして暫定配線
+  - レッド・グリーン・リファクタリングで実装。新規テスト5件を含む単体テスト180件すべて成功、lint・format・buildも成功を確認済み
   - `main`へのマージはユーザー承認待ち
 
 ## 5. GitHub Pagesへのデプロイ方針
