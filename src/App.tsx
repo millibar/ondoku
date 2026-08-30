@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createGoogleAuthClient } from "./auth/googleAuth";
+import { BottomTabNav, type TabId } from "./components/BottomTabNav";
+import type { FrequencyGridCell } from "./components/FrequencyGrid";
 import { GOOGLE_DRIVE_READONLY_SCOPE, GOOGLE_OAUTH_CLIENT_ID } from "./config";
 import {
   getAllContents,
   getAllDailyLogs,
   getAllPracticeRecords,
   getAudioBlob,
-  getPracticeRecord,
   incrementDailyLog,
   incrementPracticeCount,
   setFavorite as setFavoriteRecord,
@@ -14,9 +15,15 @@ import {
 import {
   getDriveSettings,
   getPracticeSessionState,
+  getSelectionState,
   saveDriveSettings,
   savePracticeSessionState,
+  saveSelectionState,
 } from "./data/localStorage";
+import { buildDailySeries } from "./domain/dailyGrid";
+import { frequencyLevel } from "./domain/grid";
+import type { PlaybackStatus } from "./domain/playback";
+import { buildPlaylist } from "./domain/selection";
 import { calculateStreak } from "./domain/streak";
 import { syncFromDrive, type SyncProgress } from "./domain/sync";
 import {
@@ -25,22 +32,36 @@ import {
   type AudioPlayer,
 } from "./hooks/audioPlayer";
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
-import { ContentListScreen, type ContentListItem } from "./screens/ContentListScreen";
+import {
+  ContentSelectionScreen,
+  type ContentSelectionItem,
+} from "./screens/ContentSelectionScreen";
 import { LoginScreen } from "./screens/LoginScreen";
+import { PracticeHistoryScreen } from "./screens/PracticeHistoryScreen";
 import { PracticeScreen } from "./screens/PracticeScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import { SetupScreen } from "./screens/SetupScreen";
-import type { Content, OrderSettings, PracticeMode, PracticeRecord } from "./types";
+import type {
+  Content,
+  DailyLog,
+  OrderSettings,
+  PracticeMode,
+  PracticeRecord,
+  SelectionState,
+} from "./types";
 
 // 画面遷移（自前の簡易ルーティング）。参照: docs/spec.md 4章
+// 初期セットアップ完了後は「app」1状態にまとめ、タブ（activeTab）・
+// 設定オーバーレイ（showSettings）は別stateで管理する
 type Screen =
   | { name: "loading" }
   | { name: "login" }
   | { name: "setup" }
   | { name: "syncing" }
-  | { name: "list" }
-  | { name: "practice"; contentId: number; playlist: number[] }
-  | { name: "settings" };
+  | { name: "app" };
+
+const WEEKLY_DAYS = 7;
+const YEARLY_DAYS = 196;
 
 const authClient = createGoogleAuthClient({
   clientId: GOOGLE_OAUTH_CLIENT_ID,
@@ -66,31 +87,68 @@ function App() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [authFailed, setAuthFailed] = useState(false);
   // 初回起動（キャッシュ済みデータが無い）時のログイン/セットアップ/同期フローが
-  // 完了したかどうか。キャッシュ済みデータがあれば、これを待たずに一覧画面へ進む
+  // 完了したかどうか。キャッシュ済みデータがあれば、これを待たずにアプリ本体へ進む
   const [bootstrapped, setBootstrapped] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [settingsVersion, setSettingsVersion] = useState(0);
   const [contents, setContents] = useState<Content[]>([]);
   const [records, setRecords] = useState<Map<number, PracticeRecord>>(new Map());
+  const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
   const [streak, setStreak] = useState(0);
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
 
+  // アプリ本体（タブ）側の状態。参照: docs/spec.md 4章
+  const [activeTab, setActiveTab] = useState<TabId>("practice");
+  const [showSettings, setShowSettings] = useState(false);
+  const [practiceStatus, setPracticeStatus] = useState<PlaybackStatus>("stopped");
+  // localStorageの読み出しは初回マウント時の1回だけにする（useStateの遅延初期化）。
+  // 起動時点でSelectionStateが既に保存されていたか（＝初回同期直後の
+  // 「全件選択をデフォルトにする」処理を行うべきかの判定）にも使う。参照: docs/spec.md 5.2節
+  const [initialSelectionState] = useState<SelectionState | null>(() => getSelectionState());
+  const [selectionState, setSelectionState] = useState<SelectionState>(
+    () => initialSelectionState ?? { selectedContentIds: [], favoritesOnly: false },
+  );
+  const hadPersistedSelectionRef = useRef(initialSelectionState !== null);
+  // コンテンツが1件も読み込まれていない段階でselectionStateをlocalStorageへ
+  // 書き込んでしまうと、後から「未保存」と判定できなくなり上記の初期化処理が
+  // 誤って無効化される。そのため、実際にコンテンツが読み込まれるまでは保存を
+  // 保留する（初回起動でDrive設定・同期が完了する前に書き込まれるのを防ぐ）
+  const selectionReadyRef = useRef(initialSelectionState !== null);
+
   const reloadFromDb = useCallback(async () => {
-    const [allContents, allRecords, dailyLogs] = await Promise.all([
+    const [allContents, allRecords, allDailyLogs] = await Promise.all([
       getAllContents(),
       getAllPracticeRecords(),
       getAllDailyLogs(),
     ]);
     setContents(allContents);
     setRecords(new Map(allRecords.map((r) => [r.contentId, r])));
+    setDailyLogs(allDailyLogs);
     setStreak(
       calculateStreak(
-        dailyLogs.map((d) => d.date),
+        allDailyLogs.map((d) => d.date),
         todayString(),
       ),
     );
+    if (allContents.length > 0) {
+      selectionReadyRef.current = true;
+      // 初回同期直後（SelectionStateが未保存）のみ、全件選択をデフォルトにする。
+      // 2回目以降の同期・再読み込みでは、ユーザーが選択した状態を上書きしない
+      if (!hadPersistedSelectionRef.current) {
+        hadPersistedSelectionRef.current = true;
+        setSelectionState((prev) => ({
+          ...prev,
+          selectedContentIds: allContents.map((c) => c.id),
+        }));
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    if (!selectionReadyRef.current) return;
+    saveSelectionState(selectionState);
+  }, [selectionState]);
 
   const runSync = useCallback(
     async (rootFolderId: string) => {
@@ -107,19 +165,19 @@ function App() {
       try {
         await syncFromDrive({ rootFolderId, accessToken, onProgress: setSyncProgress });
       } catch (error) {
-        // 同期に失敗しても、キャッシュ済みデータで一覧画面は表示できるようにする
+        // 同期に失敗しても、キャッシュ済みデータでアプリ本体は表示できるようにする
         console.error("同期に失敗しました", error);
         setSyncError("同期に失敗しました。ネットワーク接続を確認してもう一度お試しください。");
       }
       await reloadFromDb();
       setBootstrapped(true);
-      setScreen({ name: "list" });
+      setScreen({ name: "app" });
     },
     [accessToken, reloadFromDb],
   );
 
-  // キャッシュ済みデータが1件でもあれば、認証を待たずに即座に一覧画面へ進む
-  // （オフラインでもキャッシュ済みデータで一覧・練習ができるようにする。仕様書3章・11章）
+  // キャッシュ済みデータが1件でもあれば、認証を待たずに即座にアプリ本体へ進む
+  // （オフラインでもキャッシュ済みデータで練習・閲覧ができるようにする。仕様書3章・11章）
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -129,7 +187,7 @@ function App() {
         await reloadFromDb();
         if (!cancelled) {
           setBootstrapped(true);
-          setScreen({ name: "list" });
+          setScreen({ name: "app" });
         }
       } catch (error) {
         console.error("キャッシュ済みデータの読み込みに失敗しました", error);
@@ -198,6 +256,8 @@ function App() {
     setAccessToken(null);
     setContents([]);
     setRecords(new Map());
+    setActiveTab("practice");
+    setShowSettings(false);
     setScreen({ name: "login" });
   }
 
@@ -217,7 +277,58 @@ function App() {
     await reloadFromDb();
   }
 
-  const listItems: ContentListItem[] = useMemo(
+  function handleToggleContentSelection(id: number) {
+    setSelectionState((prev) => {
+      const next = new Set(prev.selectedContentIds);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return { ...prev, selectedContentIds: Array.from(next) };
+    });
+  }
+
+  function handleToggleCategorySelection(categoryId: string, selected: boolean) {
+    const categoryIds = contents.filter((c) => c.categoryId === categoryId).map((c) => c.id);
+    setSelectionState((prev) => {
+      const next = new Set(prev.selectedContentIds);
+      for (const id of categoryIds) {
+        if (selected) {
+          next.add(id);
+        } else {
+          next.delete(id);
+        }
+      }
+      return { ...prev, selectedContentIds: Array.from(next) };
+    });
+  }
+
+  function handleChangeFavoritesOnly(value: boolean) {
+    setSelectionState((prev) => ({ ...prev, favoritesOnly: value }));
+  }
+
+  // 練習タブから離れる際は、練習中に更新された練習回数・お気に入り・練習履歴を
+  // 他タブへ反映するため再読み込みする（旧「戻る」ボタンの役割を引き継ぐ）
+  function handleSelectTab(tab: TabId) {
+    if (activeTab === "practice" && tab !== "practice") {
+      void reloadFromDb();
+    }
+    setActiveTab(tab);
+  }
+
+  const playlist = useMemo(
+    () =>
+      buildPlaylist(
+        contents,
+        selectionState.selectedContentIds,
+        selectionState.favoritesOnly,
+        (id) => records.get(id)?.isFavorite ?? false,
+      ),
+    [contents, selectionState, records],
+  );
+
+  const selectionItems: ContentSelectionItem[] = useMemo(
     () =>
       contents.map((c) => {
         const r = records.get(c.id);
@@ -227,8 +338,27 @@ function App() {
           englishText: c.englishText,
           repeatingCount: r?.repeatingCount ?? 0,
           shadowingCount: r?.shadowingCount ?? 0,
-          lastPracticedAt: r?.lastPracticedAt ?? "",
           isFavorite: r?.isFavorite ?? false,
+        };
+      }),
+    [contents, records],
+  );
+
+  const weeklySeries = useMemo(
+    () => buildDailySeries(dailyLogs, todayString(), WEEKLY_DAYS),
+    [dailyLogs],
+  );
+  const yearlySeries = useMemo(
+    () => buildDailySeries(dailyLogs, todayString(), YEARLY_DAYS),
+    [dailyLogs],
+  );
+  const contentCells: FrequencyGridCell[] = useMemo(
+    () =>
+      contents.map((c) => {
+        const r = records.get(c.id);
+        return {
+          contentId: c.id,
+          level: frequencyLevel((r?.repeatingCount ?? 0) + (r?.shadowingCount ?? 0)),
         };
       }),
     [contents, records],
@@ -262,49 +392,60 @@ function App() {
         </p>
       );
 
-    case "list":
+    case "app":
       return (
-        <ContentListScreen
-          items={listItems}
-          streak={streak}
-          syncError={syncError}
-          onSelect={(id) =>
-            setScreen({ name: "practice", contentId: id, playlist: contents.map((c) => c.id) })
-          }
-          onToggleFavorite={(id) => void handleToggleFavorite(id)}
-          onSync={handleSync}
-          onOpenSettings={() => setScreen({ name: "settings" })}
-        />
-      );
-
-    case "practice":
-      return (
-        <PracticeContainer
-          contents={contents}
-          initialContentId={screen.contentId}
-          playlist={screen.playlist}
-          streak={streak}
-          onBack={() => {
-            setScreen({ name: "list" });
-            void reloadFromDb();
-          }}
-        />
-      );
-
-    case "settings":
-      return (
-        <SettingsScreen
-          currentFolderId={getDriveSettings()?.rootFolderId ?? ""}
-          onSave={(folderId) => {
-            saveDriveSettings({ rootFolderId: folderId });
-            setSettingsVersion((v) => v + 1);
-            setScreen({ name: "list" });
-          }}
-          syncError={syncError}
-          onSync={handleSync}
-          onLogout={handleLogout}
-          onBack={() => setScreen({ name: "list" })}
-        />
+        <div className="app-shell">
+          <div className="app-shell__content">
+            {showSettings ? (
+              <SettingsScreen
+                currentFolderId={getDriveSettings()?.rootFolderId ?? ""}
+                onSave={(folderId) => {
+                  saveDriveSettings({ rootFolderId: folderId });
+                  setSettingsVersion((v) => v + 1);
+                  setShowSettings(false);
+                }}
+                syncError={syncError}
+                onSync={handleSync}
+                onLogout={handleLogout}
+                onBack={() => setShowSettings(false)}
+              />
+            ) : activeTab === "selection" ? (
+              <ContentSelectionScreen
+                items={selectionItems}
+                selectedContentIds={selectionState.selectedContentIds}
+                onToggleContentSelection={handleToggleContentSelection}
+                onToggleCategorySelection={handleToggleCategorySelection}
+                onToggleFavorite={(id) => void handleToggleFavorite(id)}
+                onOpenSettings={() => setShowSettings(true)}
+              />
+            ) : activeTab === "history" ? (
+              <PracticeHistoryScreen
+                streak={streak}
+                weeklySeries={weeklySeries}
+                yearlySeries={yearlySeries}
+                contentCells={contentCells}
+              />
+            ) : (
+              <PracticeContainer
+                contents={contents}
+                records={records}
+                playlist={playlist}
+                streak={streak}
+                favoritesOnly={selectionState.favoritesOnly}
+                onChangeFavoritesOnly={handleChangeFavoritesOnly}
+                onToggleFavorite={(id) => void handleToggleFavorite(id)}
+                onStatusChange={setPracticeStatus}
+              />
+            )}
+          </div>
+          {!showSettings && (
+            <BottomTabNav
+              active={activeTab}
+              disabled={practiceStatus !== "stopped"}
+              onSelect={handleSelectTab}
+            />
+          )}
+        </div>
       );
 
     default:
@@ -316,28 +457,37 @@ function App() {
 // App.tsx専用の内部コンポーネントのためexportしない。
 function PracticeContainer({
   contents,
-  initialContentId,
+  records,
   playlist,
   streak,
-  onBack,
+  favoritesOnly,
+  onChangeFavoritesOnly,
+  onToggleFavorite,
+  onStatusChange,
 }: {
   contents: Content[];
-  initialContentId: number;
+  records: Map<number, PracticeRecord>;
   playlist: number[];
   streak: number;
-  onBack: () => void;
+  favoritesOnly: boolean;
+  onChangeFavoritesOnly: (value: boolean) => void;
+  onToggleFavorite: (id: number) => void;
+  onStatusChange: (status: PlaybackStatus) => void;
 }) {
-  // 練習状態の復元（仕様書5.5節）。ここでは簡略化し、フィルタ（出題範囲）の復元は行わない
+  // 練習状態の復元（仕様書5.6節）
   const [practiceMode, setPracticeMode] = useState<PracticeMode>(
     () => getPracticeSessionState()?.practiceMode ?? "shadowing",
   );
   const [orderSettings, setOrderSettings] = useState<OrderSettings>(
     () => getPracticeSessionState()?.orderSettings ?? { isRandom: false, isRepeatOne: false },
   );
-  const [isFavorite, setIsFavoriteState] = useState(false);
-  // お気に入りのみ表示: SelectionStateとの本格連動（出題範囲の絞り込み）はWP10で行う。
-  // WP8時点では見た目のみ動くプレースホルダーとする
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  // 出題範囲内に無ければ（選択が変わった等）先頭にフォールバックする。
+  // usePlaybackEngineのinitialContentIdは初回マウント時のみ有効なため、一度だけ計算する
+  const [initialContentId] = useState(() => {
+    const persisted = getPracticeSessionState()?.currentContentId;
+    if (persisted !== undefined && playlist.includes(persisted)) return persisted;
+    return playlist[0] ?? 0;
+  });
   const [audioReady, setAudioReady] = useState(false);
   const [player, setPlayer] = useState<AudioPlayer>(() => createNoopAudioPlayer());
 
@@ -345,12 +495,6 @@ function PracticeContainer({
   const urlMapRef = useRef<Map<number, string>>(new Map());
 
   const contentsById = useMemo(() => new Map(contents.map((c) => [c.id, c])), [contents]);
-
-  useEffect(() => {
-    void getPracticeRecord(initialContentId).then((record) =>
-      setIsFavoriteState(record?.isFavorite ?? false),
-    );
-  }, [initialContentId]);
 
   // <audio>要素のrefが確定してから実プレイヤーへ差し替える
   useEffect(() => {
@@ -410,6 +554,10 @@ function PracticeContainer({
   });
 
   useEffect(() => {
+    onStatusChange(engine.status);
+  }, [engine.status, onStatusChange]);
+
+  useEffect(() => {
     savePracticeSessionState({
       practiceMode,
       orderSettings,
@@ -417,21 +565,26 @@ function PracticeContainer({
     });
   }, [practiceMode, orderSettings, engine.currentContentId]);
 
-  async function handleToggleFavorite() {
-    const next = !isFavorite;
-    setIsFavoriteState(next);
-    await setFavoriteRecord(engine.currentContentId, next);
-  }
-
   const currentContent = contentsById.get(engine.currentContentId);
   const currentIndex = playlist.indexOf(engine.currentContentId) + 1;
+  const isFavorite = records.get(engine.currentContentId)?.isFavorite ?? false;
+
+  // 出題範囲が0件（練習対象チェックがすべてOFF、またはお気に入りのみ表示ONで
+  // お気に入りが1件も無い場合）は再生系UIを出さない。参照: docs/spec.md 8.0節
+  if (playlist.length === 0) {
+    return (
+      <p className="inline-status-message">
+        練習対象の英文が選択されていません。英文選択画面で選択してください。
+      </p>
+    );
+  }
 
   return (
     <>
       {/* 再生用の非表示audio要素 */}
       <audio ref={audioElRef} style={{ display: "none" }} />
       {!audioReady || !currentContent ? (
-        <p className="app-status-message">音声を準備中...</p>
+        <p className="inline-status-message">音声を準備中...</p>
       ) : (
         <PracticeScreen
           content={currentContent}
@@ -446,13 +599,12 @@ function PracticeContainer({
           totalCount={playlist.length}
           streak={streak}
           favoritesOnly={favoritesOnly}
-          onChangeFavoritesOnly={setFavoritesOnly}
+          onChangeFavoritesOnly={onChangeFavoritesOnly}
           onPlay={engine.play}
           onStop={engine.stop}
           onNext={engine.next}
           onPrev={engine.prev}
-          onToggleFavorite={() => void handleToggleFavorite()}
-          onBack={onBack}
+          onToggleFavorite={() => onToggleFavorite(engine.currentContentId)}
         />
       )}
     </>
