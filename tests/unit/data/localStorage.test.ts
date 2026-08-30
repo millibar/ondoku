@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   getDriveSettings,
   getPracticeSessionState,
+  getSelectionState,
   saveDriveSettings,
   savePracticeSessionState,
+  saveSelectionState,
 } from "../../../src/data/localStorage";
 
 // 参照: docs/test-plan.md 4.6節
@@ -17,7 +19,6 @@ describe("PracticeSessionState", () => {
     const state = {
       practiceMode: "repeating" as const,
       orderSettings: { isRandom: true, isRepeatOne: false },
-      filter: { categoryId: "01", favoritesOnly: false },
       currentContentId: 42,
       shuffledHistory: [1, 2, 3],
     };
@@ -34,6 +35,28 @@ describe("PracticeSessionState", () => {
   it("不正なJSONが入っていた場合はクラッシュせずnullを返す", () => {
     localStorage.setItem("ondoku:practiceSessionState", "{not valid json");
     expect(getPracticeSessionState()).toBeNull();
+  });
+});
+
+describe("SelectionState", () => {
+  it("保存・復元で往復してもオブジェクトが一致する", () => {
+    const state = {
+      selectedContentIds: [1, 2, 3],
+      favoritesOnly: true,
+    };
+
+    saveSelectionState(state);
+
+    expect(getSelectionState()).toEqual(state);
+  });
+
+  it("値が存在しない場合はnullを返す", () => {
+    expect(getSelectionState()).toBeNull();
+  });
+
+  it("不正なJSONが入っていた場合はクラッシュせずnullを返す", () => {
+    localStorage.setItem("ondoku:selectionState", "{not valid json");
+    expect(getSelectionState()).toBeNull();
   });
 });
 

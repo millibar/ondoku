@@ -99,9 +99,20 @@ export function setFavorite(contentId: number, isFavorite: boolean): Promise<voi
 
 // --- dailyLogs ---
 
-export function upsertDailyLog(date: string): Promise<void> {
+function emptyDailyLog(date: string): DailyLog {
+  return { date, repeatingCount: 0, shadowingCount: 0 };
+}
+
+export function incrementDailyLog(date: string, mode: PracticeMode): Promise<DailyLog> {
   return withDb(async (db) => {
-    await db.put("dailyLogs", { date });
+    const existing = (await db.get("dailyLogs", date)) ?? emptyDailyLog(date);
+    const updated: DailyLog = {
+      ...existing,
+      repeatingCount: existing.repeatingCount + (mode === "repeating" ? 1 : 0),
+      shadowingCount: existing.shadowingCount + (mode === "shadowing" ? 1 : 0),
+    };
+    await db.put("dailyLogs", updated);
+    return updated;
   });
 }
 

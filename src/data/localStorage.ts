@@ -1,10 +1,11 @@
-import type { DriveSettings, PracticeSessionState } from "../types";
+import type { DriveSettings, PracticeSessionState, SelectionState } from "../types";
 
 // localStorageラッパー。参照: docs/spec.md 5.3節
 
 const KEYS = {
   driveSettings: "ondoku:driveSettings",
   practiceSessionState: "ondoku:practiceSessionState",
+  selectionState: "ondoku:selectionState",
 } as const;
 
 function readJson<T>(key: string): T | null {
@@ -31,6 +32,14 @@ export function savePracticeSessionState(state: PracticeSessionState): void {
 
 export function clearPracticeSessionState(): void {
   localStorage.removeItem(KEYS.practiceSessionState);
+}
+
+export function getSelectionState(): SelectionState | null {
+  return readJson<SelectionState>(KEYS.selectionState);
+}
+
+export function saveSelectionState(state: SelectionState): void {
+  writeJson(KEYS.selectionState, state);
 }
 
 export function getDriveSettings(): DriveSettings | null {
