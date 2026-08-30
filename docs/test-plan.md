@@ -132,6 +132,9 @@
 - `SetupScreen`: フォルダID未入力時は次に進めない、入力後は`localStorage`に保存され次画面に遷移する
 - `SettingsScreen`（参照: docs/spec.md 4.2.1節）: フォルダID保存・同期ボタン・`syncError`表示・閉じるボタンが動作する
 - `PracticeScreen`（参照: docs/spec.md 4.1節）: モード切り替えUI（練習モード／ランダム再生スイッチ／1リピート再生スイッチ）の操作で内部状態が切り替わる。通し番号・カテゴリ・「現在のインデックス/総数」・連続学習日数が表示される。お気に入りのみ表示チェックボックスの操作で`onChangeFavoritesOnly`が呼ばれる
+- `WeeklyBarChart`（参照: docs/spec.md 9.4節）: 渡した日数分の棒が描画される。各棒の高さ（相対値）がリピーティング／シャドーイングの回数を反映する
+- `DailyHeatmapGrid`（参照: docs/spec.md 9.4節）: 渡されたセルの数だけマスを描画する。各マスの色区分（`data-level`）が日別の合計練習回数通りに反映される
+- `PracticeHistoryScreen`（参照: docs/spec.md 4.3節）: 連続学習日数・7日間棒グラフ・196日ヒートマップ・全英文グリッドがすべて表示される
 
 ## 6. E2Eテストシナリオ（Playwright）
 
