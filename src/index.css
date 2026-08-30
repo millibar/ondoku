@@ -602,20 +602,31 @@ select {
   gap: 10px;
 }
 
-/* 目のアイコン（パスワード表示・非表示のような表示切り替え） */
+/* 目のアイコン（パスワード表示・非表示のような表示切り替え）。
+   アイコンの中心が、隣接するテキストの1行目の中心に揃うよう、
+   高さをテキスト側の行の高さ（font-size × line-height）に合わせる。
+   横方向のタップ領域は確保しつつ、縦はテキスト行に合わせて詰める */
 .content-text__eye-toggle {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 32px;
-  height: 32px;
-  margin-top: 2px;
   padding: 0;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--color-text-muted);
+}
+
+/* 英文: font-size 1.25rem(20px) × line-height 1.5 = 30px */
+.content-text__row--english .content-text__eye-toggle {
+  height: 30px;
+}
+
+/* 日本語訳: font-size 0.9375rem(15px) × line-height 1.6（body由来） = 24px */
+.content-text__row--japanese .content-text__eye-toggle {
+  height: 24px;
 }
 
 .content-text__eye-toggle:hover:not(:disabled) {

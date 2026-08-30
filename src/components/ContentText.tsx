@@ -2,6 +2,10 @@ import { useState } from "react";
 
 // 英文・日本語訳の表示（それぞれ独立に目のアイコンでON/OFF切り替え可能）。
 // 参照: docs/spec.md 5.3節
+//
+// 非表示時はDOMから取り除く（display:none相当）のではなく visibility:hidden
+// にすることで、表示・非表示の切り替えでレイアウト（カードの高さ）が
+// 変わらないようにしている
 
 export interface ContentTextProps {
   englishText: string;
@@ -14,17 +18,27 @@ export function ContentText({ englishText, japaneseText }: ContentTextProps) {
 
   return (
     <div className="content-text">
-      <div className="content-text__row">
+      <div className="content-text__row content-text__row--english">
         <EyeToggle visible={showEnglish} label="英文" onClick={() => setShowEnglish((v) => !v)} />
-        {showEnglish && <p className="content-text__english">{englishText}</p>}
+        <p
+          className="content-text__english"
+          style={showEnglish ? undefined : { visibility: "hidden" }}
+        >
+          {englishText}
+        </p>
       </div>
-      <div className="content-text__row">
+      <div className="content-text__row content-text__row--japanese">
         <EyeToggle
           visible={showJapanese}
           label="日本語訳"
           onClick={() => setShowJapanese((v) => !v)}
         />
-        {showJapanese && <p className="content-text__japanese">{japaneseText}</p>}
+        <p
+          className="content-text__japanese"
+          style={showJapanese ? undefined : { visibility: "hidden" }}
+        >
+          {japaneseText}
+        </p>
       </div>
     </div>
   );
