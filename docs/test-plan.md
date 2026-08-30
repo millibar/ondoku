@@ -49,13 +49,16 @@
   - `practiceMode='shadowing'`の場合、待機せず進行ロジックが実行される
   - `practiceMode='repeating'`の場合、`waiting`に遷移し、待機時間経過後に進行ロジックが実行される
 - 進行ロジック（8.2節）:
-  - `isRepeatOne=true`: インデックスが変化せず、同じコンテンツで`playing`に戻る
-  - `isRepeatOne=false, isRandom=false`: 通し番号で次のインデックスに進む（末尾では先頭に戻る）
-  - `isRepeatOne=false, isRandom=true`: 出題範囲内からランダムに選出される（直前と同一コンテンツが連続で選ばれない）。乱数生成器を差し替え可能にし、決定的にテストする
+  - `isRepeatOne=true`: `roundPosition`が変化せず、同じコンテンツで`playing`に戻る
+  - `isRepeatOne=false, isRandom=false`: 通し番号順の`playOrder`で次の位置に進む（末尾では先頭に戻る）
+  - `isRepeatOne=false, isRandom=true`のラウンド内（`playOrder`の末尾に達していない場合）: 既存の`playOrder`をそのまま使い、次の位置に進む（再シャッフルしない＝出題済みの英文が重複して選ばれない）
+  - `isRepeatOne=false, isRandom=true`のラウンド境界（`playOrder`の末尾に達した場合）: `roundPosition`が0に戻り、`playOrder`が再シャッフルされる（全件を含む順列であること、直前に再生したコンテンツが新ラウンドの先頭に来ないことを検証）。乱数生成器を差し替え可能にし、決定的にテストする
 - 次へ／前へボタン（8.3節）:
   - `playing`/`waiting`中に押すと、即座に次／前のコンテンツに切り替わり`playing`になる
-  - `stopped`中に押すと、インデックスのみ変わり`stopped`のままになる
-  - `isRandom=true`のとき、「次へ」は新規ランダム選出、「前へ」は`shuffledHistory`を1つ戻る。履歴がない場合は「前へ」が無効化される
+  - `stopped`中に押すと、`roundPosition`のみ変わり`stopped`のままになる
+  - 「次へ」「前へ」いずれも、`isRandom`のON/OFFに関わらず表示上の位置が必ず1ずつ増減する
+  - 「前へ」はラウンド先頭で押すと、再シャッフルせず現在の`playOrder`内で末尾に循環する
+  - `playOrder`の再構築（出題範囲の変更・`isRandom`のON/OFF切替を検知した場合、次のイベントで`playOrder`が再構築されること）
 - 停止ボタン: `playing`/`waiting`いずれからも`stopped`に遷移し、タイマー・再生が確実に止まる
 - プログレスバー計算（8.4節）:
   - `playing`中: `currentTime / duration`が0〜1の範囲で正しく計算される
@@ -66,6 +69,7 @@
 
 - `stopped`中にplaylistが変化し、現在の`currentContentId`が新しいplaylistに含まれなくなった場合（お気に入りのみ表示のON/OFF切替等で出題範囲が変わった場合）、先頭のコンテンツにリセットされる（仕様書8.0節）
 - `playing`/`waiting`中はplaylistが変化しても割り込んでリセットしない（次の自動遷移が最新のplaylistを参照して自然に解決するため）
+- 公開する`currentIndex`（出題範囲内での再生順の位置。1始まり）が、`next()`/`prev()`で1ずつ増減する
 
 ### 4.3 `domain/streak.ts`（連続学習日数）
 

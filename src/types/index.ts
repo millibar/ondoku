@@ -48,7 +48,6 @@ export interface PracticeSessionState {
   practiceMode: PracticeMode;
   orderSettings: OrderSettings;
   currentContentId: number;
-  shuffledHistory?: number[]; // isRandom=trueのときにこのセッションで再生したcontentIdの履歴
 }
 
 // 出題範囲の選択状態（localStorage）。英文選択画面・練習画面の両方から参照・更新する

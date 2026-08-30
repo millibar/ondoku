@@ -20,7 +20,6 @@ describe("PracticeSessionState", () => {
       practiceMode: "repeating" as const,
       orderSettings: { isRandom: true, isRepeatOne: false },
       currentContentId: 42,
-      shuffledHistory: [1, 2, 3],
     };
 
     savePracticeSessionState(state);

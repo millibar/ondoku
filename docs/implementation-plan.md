@@ -281,6 +281,19 @@ WP10完了・マージ後にユーザーから寄せられた改善要望・不�
   - 実機確認（npm run dev + Playwright）で、カテゴリごとの独立した開閉・全体サマリー表示を確認済み
   - ✅ ユーザー承認を得て`main`へマージ済み（2026-08-30）
 
+### 追加改修3: ランダム再生の重複防止・再生順インデックス表示（`feature/random-playback-no-repeat`）
+
+- 練習画面の「n/総数」表示を、英文の通し番号ではなく「出題範囲内での再生順の位置」に変更（ランダム再生であろうと、次へで必ず1増え前へで必ず1減る）
+- `domain/playback`の内部状態を`history`（直前と同じコンテンツを避けるだけの逐次ランダム選出）から、出題範囲全件のシャッフル済み配列`playOrder`＋その中の現在位置`roundPosition`を持つ方式に置き換え。選択した英文がすべて出題されるまで、ランダム再生で出題済みの英文が選ばれないようにする（1ラウンドを1周し終えたら再シャッフル。直前に再生したコンテンツは新ラウンドの先頭に来ないようにする）
+- 出題範囲の変更・ランダム再生ON/OFF切替を検知して`playOrder`を再構築する`reconcileOrder`を新設
+- 挙動変更: 「前へ」ボタンは、ランダム再生時も再生履歴の有無に関わらず常に有効（ラウンド内を循環）に変更（従来は履歴が無い場合に無効化していた）
+- `usePlaybackEngine`に`currentIndex`（出題範囲内での再生順の位置。1始まり）を新設し、`App.tsx`はここから表示用インデックスを取得するよう変更
+- 未使用になった`PracticeSessionState.shuffledHistory`フィールドを削除
+- **完了条件**: `domain/playback`・`usePlaybackEngine`の単体テストが成功、既存テスト・lint・format・buildがすべて成功すること
+- **状況**: ✅ 完了（2026-08-30、`feature/random-playback-no-repeat`ブランチ）
+  - レッド・グリーン・リファクタリングで実装。単体テスト217件すべて成功、lint・format・buildも成功を確認済み
+  - 実機確認（npm run dev + Playwright）で判明した追加不具合も修正: ランダム再生ON/OFF切替直後は`playOrder`の再構築が次のイベントまで遅延され、その次の「次へ」操作で表示上の数字が2以上動いてしまっていたため、切替を検知した時点で即座に再構築するよう`usePlaybackEngine`を修正（`domain/playback/reducer.ts`の`reconcileOrder`をエクスポートして再利用）
+
 ## 5. GitHub Pagesへのデプロイ方針
 
 - GitHub Actionsで`main`ブランチへのマージをトリガーに、`npm run build`の成果物をGitHub Pagesへ公開する

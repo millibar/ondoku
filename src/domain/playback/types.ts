@@ -7,8 +7,16 @@ export type PlaybackStatus = "stopped" | "playing" | "waiting";
 export interface PlaybackState {
   status: PlaybackStatus;
   currentContentId: number;
-  // isRandom=trueのときにこのセッションで再生したcontentIdの履歴（「前へ」で1つ戻るために使用）
-  history: number[];
+  // 現在のラウンドの出題順（順次再生ならplaylistそのもの、ランダム再生なら
+  // シャッフル済みの並び）。1ラウンド（出題範囲の全件）を出題し終えると、
+  // ランダム再生の場合のみ再シャッフルして次のラウンドに入る。
+  // 参照: docs/spec.md 8.2節・8.3節
+  playOrder: number[];
+  // playOrder内での現在位置（0始まり）。表示上の「n/総数」は roundPosition + 1
+  roundPosition: number;
+  // playOrderがisRandom=true（ランダム再生）用に構築されたものかどうか。
+  // isRandomの切り替えを検知してplayOrderを再構築するために使う
+  isRandomOrder: boolean;
 }
 
 export interface PlaybackContext {
