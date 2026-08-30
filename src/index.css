@@ -385,8 +385,19 @@ select {
    英文選択画面
    参照: docs/spec.md 4.2節
    ========================================================================== */
+/* スクロールしても常に見えるよう、ヘッダー・サマリー・（開いている）カテゴリ見出しを
+   スタックして固定表示する。オフセットは実測したヘッダー・サマリーの高さに
+   小さめのバッファを足した値（デザイン変更時は再測定して調整すること） */
+.content-selection-screen {
+  --selection-header-h: 74px;
+  --selection-summary-h: 46px;
+}
+
 /* 画面上部の全カテゴリ一括選択・選択数サマリー */
 .content-selection-screen__summary {
+  position: sticky;
+  top: var(--selection-header-h);
+  z-index: 4;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -410,6 +421,12 @@ select {
 }
 
 .content-selection-screen__category-header {
+  position: sticky;
+  top: calc(var(--selection-header-h) + var(--selection-summary-h));
+  z-index: 3;
+  margin-inline: -16px;
+  padding: 8px 16px;
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   gap: 8px;
