@@ -16,6 +16,7 @@ export interface ContentSelectionScreenProps {
   selectedContentIds: number[]; // 出題範囲（練習対象チェックボックスでONのID一覧）
   onToggleContentSelection: (id: number) => void;
   onToggleCategorySelection: (categoryId: string, selected: boolean) => void;
+  onToggleAllSelection: (selected: boolean) => void;
   onToggleFavorite: (id: number) => void;
   onOpenSettings: () => void;
 }
@@ -25,12 +26,13 @@ export function ContentSelectionScreen({
   selectedContentIds,
   onToggleContentSelection,
   onToggleCategorySelection,
+  onToggleAllSelection,
   onToggleFavorite,
   onOpenSettings,
 }: ContentSelectionScreenProps) {
   const selected = useMemo(() => new Set(selectedContentIds), [selectedContentIds]);
-  // フィルターで非表示にしたカテゴリ（表示のみに影響。出題範囲そのものは変えない）
-  const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
+  // 折りたたんだカテゴリ（見出しクリックで開閉するUI状態。既定はすべて展開）
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
   const categories = useMemo(
     () => Array.from(new Set(items.map((item) => item.categoryId))).sort(),
@@ -47,8 +49,8 @@ export function ContentSelectionScreen({
     return map;
   }, [items]);
 
-  function toggleCategoryVisibility(categoryId: string) {
-    setHiddenCategories((prev) => {
+  function toggleCategoryCollapsed(categoryId: string) {
+    setCollapsedCategories((prev) => {
       const next = new Set(prev);
       if (next.has(categoryId)) {
         next.delete(categoryId);
@@ -59,6 +61,10 @@ export function ContentSelectionScreen({
     });
   }
 
+  const selectedCount = items.filter((item) => selected.has(item.id)).length;
+  const allSelected = items.length > 0 && selectedCount === items.length;
+  const someSelected = selectedCount > 0 && !allSelected;
+
   return (
     <div className="content-selection-screen">
       <header>
@@ -68,40 +74,51 @@ export function ContentSelectionScreen({
         </button>
       </header>
 
-      <div className="content-selection-screen__filters">
-        {categories.map((categoryId) => (
-          <label key={categoryId}>
-            <input
-              type="checkbox"
-              checked={!hiddenCategories.has(categoryId)}
-              onChange={() => toggleCategoryVisibility(categoryId)}
-              aria-label={`カテゴリ${categoryId}を表示`}
-            />
-            {categoryId}
-          </label>
-        ))}
+      <div className="content-selection-screen__summary">
+        <SelectAllCheckbox
+          checked={allSelected}
+          indeterminate={someSelected}
+          ariaLabel="すべて選択"
+          onChange={() => onToggleAllSelection(!allSelected)}
+        />
+        <span className="content-selection-screen__summary-count">
+          {selectedCount}/{items.length}
+        </span>
       </div>
 
-      {categories
-        .filter((categoryId) => !hiddenCategories.has(categoryId))
-        .map((categoryId) => {
-          const categoryItems = itemsByCategory.get(categoryId) ?? [];
-          const selectedCount = categoryItems.filter((item) => selected.has(item.id)).length;
-          const allSelected = categoryItems.length > 0 && selectedCount === categoryItems.length;
-          const someSelected = selectedCount > 0 && !allSelected;
+      {categories.map((categoryId) => {
+        const categoryItems = itemsByCategory.get(categoryId) ?? [];
+        const categorySelectedCount = categoryItems.filter((item) => selected.has(item.id)).length;
+        const allSelectedInCategory =
+          categoryItems.length > 0 && categorySelectedCount === categoryItems.length;
+        const someSelectedInCategory = categorySelectedCount > 0 && !allSelectedInCategory;
+        const isExpanded = !collapsedCategories.has(categoryId);
 
-          return (
-            <section key={categoryId} className="content-selection-screen__category">
-              <div className="content-selection-screen__category-header">
-                <SelectAllCheckbox
-                  checked={allSelected}
-                  indeterminate={someSelected}
-                  ariaLabel={`カテゴリ${categoryId}を全選択`}
-                  onChange={() => onToggleCategorySelection(categoryId, !allSelected)}
-                />
-                <h2>カテゴリ {categoryId}</h2>
-              </div>
+        return (
+          <section key={categoryId} className="content-selection-screen__category">
+            <div className="content-selection-screen__category-header">
+              <SelectAllCheckbox
+                checked={allSelectedInCategory}
+                indeterminate={someSelectedInCategory}
+                ariaLabel={`カテゴリ${categoryId}を全選択`}
+                onChange={() => onToggleCategorySelection(categoryId, !allSelectedInCategory)}
+              />
+              <h2>
+                <button
+                  type="button"
+                  className="content-selection-screen__category-toggle"
+                  aria-expanded={isExpanded}
+                  onClick={() => toggleCategoryCollapsed(categoryId)}
+                >
+                  カテゴリ {categoryId}
+                  <span className="content-selection-screen__category-count">
+                    {categorySelectedCount}/{categoryItems.length}
+                  </span>
+                </button>
+              </h2>
+            </div>
 
+            {isExpanded && (
               <ul className="content-selection-screen__list">
                 {categoryItems.map((item) => (
                   <li key={item.id}>
@@ -132,14 +149,15 @@ export function ContentSelectionScreen({
                   </li>
                 ))}
               </ul>
-            </section>
-          );
-        })}
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }
 
-// カテゴリの全選択／全解除チェックボックス。一部だけ選択済みの場合はindeterminate表示にする
+// 全選択／全解除チェックボックス。一部だけ選択済みの場合はindeterminate表示にする
 function SelectAllCheckbox({
   checked,
   indeterminate,
