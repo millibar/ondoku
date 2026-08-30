@@ -27,8 +27,6 @@ export interface PracticeScreenProps {
   onNext: () => void;
   onPrev: () => void;
   onToggleFavorite: () => void;
-  // タブナビゲーション導入（WP10）までの暫定的な画面遷移。参照: docs/implementation-plan.md WP8
-  onBack: () => void;
 }
 
 export function PracticeScreen({
@@ -50,7 +48,6 @@ export function PracticeScreen({
   onNext,
   onPrev,
   onToggleFavorite,
-  onBack,
 }: PracticeScreenProps) {
   const [showEnglish, setShowEnglish] = useState(true);
   const [showJapanese, setShowJapanese] = useState(true);
@@ -58,9 +55,7 @@ export function PracticeScreen({
   return (
     <div className="practice-screen">
       <header>
-        <button type="button" onClick={onBack}>
-          戻る
-        </button>
+        <h1>練習</h1>
         <p className="practice-screen__streak">連続学習日数: {streak}日</p>
       </header>
 

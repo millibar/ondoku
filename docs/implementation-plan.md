@@ -232,6 +232,30 @@ WP0〜WP5でひととおり動作するアプリが完成した後、`docs/requi
 - **状況**: ✅ 完了（2026-08-30、`feature/practice-history-screen`ブランチ）
   - レッド・グリーン・リファクタリングで実装。新規テスト18件を含む単体テスト192件すべて成功、lint・format・buildも成功を確認済み
   - `App.tsx`には一切手を入れていない（このWPは純粋な追加のみ）
+  - ✅ ユーザー承認を得て`main`へマージ済み（2026-08-30）
+
+### WP10: タブナビゲーション配線・画面統合（`feature/tab-navigation`）
+
+- `components/BottomTabNav.tsx`（新規）: 練習／英文選択／練習履歴の3タブ。練習中・待機中は英文選択／練習履歴タブを`disabled`にする
+- `App.tsx`の主な変更
+  1. `dailyLogs`（練習履歴画面用）・`selectionState`（`SelectionState`。`localStorage`から読み込み・保存）を新たに保持。初回（`SelectionState`が無い）は全件選択をデフォルトにする
+  2. 出題範囲は`buildPlaylist`で都度算出。0件の場合は練習画面にメッセージを表示し再生系ボタンを出さない（仕様書8.0節）
+  3. 画面遷移: ログイン→セットアップ→同期は現状維持。完了後は「タブ本体」の1状態にまとめ、`activeTab`・`showSettings`を別状態として持つ
+  4. `ContentListScreen` → `ContentSelectionScreen`に置き換え
+  5. `PracticeScreen`の「戻る」ボタン・`onBack`propを削除。再生中・待機中かどうかをコールバックでApp.tsxへ伝え、タブのdisabled制御に使う
+  6. `PracticeHistoryScreen`に`dailyLogs`から算出した7日分・196日分を配線
+  7. 旧`screens/ContentListScreen.tsx`とそのテストを削除
+- `tests/unit/App.test.tsx`: dbモックの`upsertDailyLog`→`incrementDailyLog`修正、タブ切り替え・設定画面の開閉のテストを追加
+- **完了条件**: 上記の統合が完了し、既存テスト・新規テストがすべて成功、lint・format・buildが通ること
+- **状況**: ✅ 完了（2026-08-30、`feature/tab-navigation`ブランチ）
+  - 計画通り実装。加えて、練習画面固有だった「お気に入りのみ表示」（WP8で暫定配線）・「戻る」を廃止し、本来のApp.tsxレベルの`selectionState`・タブ操作に置き換え
+  - `PracticeContainer`の`isFavorite`・お気に入りトグルは、独自にDBを読む方式から、App.tsxの`records`（共有state）を参照する方式に変更。これにより英文選択画面・練習画面のどちらでお気に入りを変更しても即座に他方へ反映される（従来からの既知の簡略化点を解消）
+  - 練習タブから他タブへ切り替える際に`reloadFromDb()`を呼び、練習回数・お気に入り・練習履歴を反映する（旧「戻る」ボタンの役割を引き継ぐ）
+  - 旧`screens/ContentListScreen.tsx`とテストを削除、`components/README.md`・`screens/README.md`を更新
+  - **実機確認で発見・修正した問題**: `npm run dev` + Playwrightで実際にIndexedDBへデータを投入して確認したところ、初回起動時（コンテンツが空の段階）で`SelectionState`永続化用のeffectが空の状態を`localStorage`へ書き込んでしまい、後から同期が完了しても「全件選択をデフォルトにする」判定が正しく働かない不具合を発見。コンテンツが実際に読み込まれるまで永続化を保留する`selectionReadyRef`を追加して解消
+  - lintで`react-hooks/refs`違反（レンダー中に別refの`.current`を読む）を検出・修正。`localStorage`の読み出しを`useState`の遅延初期化1回にまとめ、複数の`useRef`がそこから安全に初期値を得られるよう整理
+  - **ユーザー報告で発見・修正した問題**: マージ前レビューで「英文選択画面で画面下のタブが表示されない」と報告を受けて調査。`.app-shell`に`min-height: 100dvh`を指定していたため、英文選択画面のようにカード件数が多くコンテンツが長くなると、上限の無い`min-height`によりページ全体（`.app-shell`自体）が縦に伸びてタブバーごと下へ押し出されてしまうことが原因だった。`height: 100dvh`に変更し、スクロールを`.app-shell__content`側（`overflow-y: auto`）に閉じ込めることで解消。30件のダミーコンテンツを投入し、最下部までスクロールしてもタブバーが画面下部に固定表示されることを実機確認済み
+  - 単体テスト191件すべて成功、lint・format・buildも成功を確認済み
   - `main`へのマージはユーザー承認待ち
 
 ## 5. GitHub Pagesへのデプロイ方針

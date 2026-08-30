@@ -123,6 +123,54 @@ ul {
   text-align: center;
 }
 
+/* タブ本体内（app-shell__content）の「準備中」「未選択」等の軽量な状態表示。
+   app-status-messageと異なりmin-height:100dvhを指定せず、タブバーの表示を妨げない */
+.inline-status-message {
+  padding: 48px 24px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* ==========================================================================
+   アプリ本体（下部タブナビゲーション）
+   参照: docs/spec.md 4章
+   ========================================================================== */
+.app-shell {
+  /* min-height だと中身が長いときに画面全体が伸びてタブバーごと下に
+     押し出されてしまう（英文選択画面などコンテンツが長い場合に発生）ため、
+     height で高さを固定し、スクロールを app-shell__content 側に閉じ込める */
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.bottom-tab-nav {
+  display: flex;
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-tab-nav__button {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 8px;
+  font-size: 0.8125rem;
+}
+
+.bottom-tab-nav__button[aria-pressed="true"] {
+  font-weight: 600;
+}
+
 /* ==========================================================================
    共通フォーム部品
    ========================================================================== */
@@ -243,10 +291,21 @@ select {
 /* ==========================================================================
    画面共通レイアウト
    ========================================================================== */
-.content-list-screen,
+/* タブ本体（app-shell__content）の中身として表示する3画面。
+   高さはapp-shellのタブバー分を差し引いた領域に収まるよう、
+   min-height:100dvhは指定しない（設定画面はオーバーレイのため別扱い） */
 .content-selection-screen,
 .practice-screen,
-.practice-history-screen,
+.practice-history-screen {
+  max-width: 640px;
+  margin-inline: auto;
+  padding: 16px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 設定画面はタブバーを置き換えるオーバーレイとして表示するため、単独で全画面分の高さを取る */
 .settings-screen {
   min-height: 100dvh;
   max-width: 640px;
@@ -258,7 +317,6 @@ select {
 }
 
 /* コンテンツ一覧・練習・設定画面のヘッダーを上部固定にする */
-.content-list-screen > header,
 .content-selection-screen > header,
 .practice-screen > header,
 .practice-history-screen > header,
@@ -321,85 +379,6 @@ select {
 
 .setup-screen label {
   text-align: left;
-}
-
-/* ==========================================================================
-   コンテンツ一覧画面
-   参照: docs/spec.md 4章、5.2節
-   ========================================================================== */
-.content-list-screen > header h1 {
-  width: 100%;
-}
-
-/* 連続学習日数（ヘッダー内の最初のp要素） */
-.content-list-screen > header p:first-of-type {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-  padding: 4px 12px;
-  border-radius: 999px;
-}
-
-.content-list-screen__filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 16px;
-}
-
-.content-list-screen__filters label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.content-list-screen__list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.content-list-screen__list li {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
-  box-shadow: var(--shadow-sm);
-}
-
-.content-list-screen__item-select {
-  background: none;
-  border: none;
-  padding: 0;
-  text-align: left;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--color-text);
-  border-radius: 0;
-}
-
-.content-list-screen__item-select:hover:not(:disabled) {
-  color: var(--color-primary);
-  border-color: transparent;
-}
-
-.content-list-screen__item-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.content-list-screen__item-meta {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
 }
 
 /* ==========================================================================

@@ -33,7 +33,6 @@ function renderScreen(overrides: Partial<Parameters<typeof PracticeScreen>[0]> =
       onNext={vi.fn()}
       onPrev={vi.fn()}
       onToggleFavorite={vi.fn()}
-      onBack={vi.fn()}
       {...overrides}
     />,
   );
@@ -92,13 +91,6 @@ describe("PracticeScreen", () => {
     });
     fireEvent.click(screen.getByLabelText("1リピート再生"));
     expect(onChangeOrderSettings).toHaveBeenCalledWith({ isRandom: true, isRepeatOne: true });
-  });
-
-  it("戻るボタンでonBackが呼ばれる", () => {
-    const onBack = vi.fn();
-    renderScreen({ onBack });
-    fireEvent.click(screen.getByRole("button", { name: "戻る" }));
-    expect(onBack).toHaveBeenCalledTimes(1);
   });
 
   it("再生コントロール（PlaybackControls）が表示され、次へボタンでonNextが呼ばれる", () => {

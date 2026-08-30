@@ -5,10 +5,11 @@ import { getAllContents } from "../../src/data/db";
 import { saveDriveSettings } from "../../src/data/localStorage";
 import { syncFromDrive } from "../../src/domain/sync";
 
-// 参照: docs/spec.md 4章（画面遷移）
+// 参照: docs/spec.md 4章（画面遷移。3タブ構成＋設定サブ画面）
 //
 // App.tsxはGoogle認証・IndexedDB・Drive同期といった外部IOを実配線するため、
-// それらをモック化した上で、画面遷移の骨格（ログイン→セットアップ→一覧）を検証する。
+// それらをモック化した上で、画面遷移の骨格（ログイン→セットアップ→アプリ本体、
+// タブ切り替え、設定画面の開閉）を検証する。
 // 音声再生エンジン自体の詳細は tests/unit/hooks/usePlaybackEngine.test.ts で検証済み。
 
 const { requestTokenMock } = vi.hoisted(() => ({ requestTokenMock: vi.fn() }));
@@ -22,15 +23,22 @@ vi.mock("../../src/data/db", () => ({
   getAllPracticeRecords: vi.fn().mockResolvedValue([]),
   getAllDailyLogs: vi.fn().mockResolvedValue([]),
   getAudioBlob: vi.fn(),
-  getPracticeRecord: vi.fn(),
+  incrementDailyLog: vi.fn(),
   incrementPracticeCount: vi.fn(),
   setFavorite: vi.fn(),
-  upsertDailyLog: vi.fn(),
 }));
 
 vi.mock("../../src/domain/sync", () => ({
   syncFromDrive: vi.fn(),
 }));
+
+const SAMPLE_CONTENT = {
+  id: 1,
+  categoryId: "01",
+  englishText: "Hello world.",
+  japaneseText: "こんにちは世界。",
+  audioFileName: "1.opus",
+};
 
 beforeEach(() => {
   localStorage.clear();
@@ -58,32 +66,25 @@ describe("App", () => {
     expect(await screen.findByLabelText("Google DriveのフォルダID")).toBeInTheDocument();
   });
 
-  it("ログイン済み・Drive設定済みの場合、一覧画面が表示される", async () => {
+  it("ログイン済み・Drive設定済みの場合、アプリ本体（練習タブ）が表示される", async () => {
     saveDriveSettings({ rootFolderId: "folder-1" });
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
     requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
 
     render(<App />);
 
-    expect(await screen.findByText("英語音読練習")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "同期" })).toBeInTheDocument();
+    expect(await screen.findByText("Hello world.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "練習" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("サイレント再認証に失敗（オフライン等）しても、キャッシュ済みデータがあれば一覧画面が表示される（仕様書11章）", async () => {
+  it("サイレント再認証に失敗（オフライン等）しても、キャッシュ済みデータがあればアプリ本体が表示される（仕様書11章）", async () => {
     requestTokenMock.mockRejectedValue(new Error("offline"));
     // reloadFromDb内でも呼ばれるため、両方の呼び出しで同じ結果を返す
-    vi.mocked(getAllContents).mockResolvedValue([
-      {
-        id: 1,
-        categoryId: "01",
-        englishText: "Cached content.",
-        japaneseText: "キャッシュ済みコンテンツ。",
-        audioFileName: "1.opus",
-      },
-    ]);
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
 
     render(<App />);
 
-    expect(await screen.findByText("Cached content.")).toBeInTheDocument();
+    expect(await screen.findByText("Hello world.")).toBeInTheDocument();
     // ログイン画面には遷移しない
     expect(screen.queryByRole("button", { name: "Googleでログイン" })).not.toBeInTheDocument();
   });
@@ -98,11 +99,70 @@ describe("App", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "次へ" }));
 
-    // 同期完了後、一覧画面に遷移する（モックのsyncFromDriveは即座に解決するため、
-    // "同期中"表示は一瞬で過ぎ去る可能性があり、最終状態で検証する）
-    expect(await screen.findByText("英語音読練習")).toBeInTheDocument();
+    // 同期完了後、アプリ本体（タブナビゲーション）に遷移する（モックのsyncFromDriveは
+    // 即座に解決するため、"同期中"表示は一瞬で過ぎ去る可能性があり、最終状態で検証する）
+    expect(await screen.findByRole("button", { name: "英文選択" })).toBeInTheDocument();
     expect(syncFromDrive).toHaveBeenCalledWith(
       expect.objectContaining({ rootFolderId: "folder-123", accessToken: "token" }),
     );
+  });
+
+  it("練習対象の英文が選択されていない場合、練習タブに案内メッセージが表示される", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    // getAllContentsが空のままなので、選択状態も空 → 出題範囲が0件になる
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+
+    expect(
+      await screen.findByText(
+        "練習対象の英文が選択されていません。英文選択画面で選択してください。",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("英文選択タブに切り替えると英文選択画面が表示される", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+    await screen.findByText("Hello world.");
+
+    fireEvent.click(screen.getByRole("button", { name: "英文選択" }));
+
+    expect(await screen.findByRole("heading", { name: "カテゴリ 01" })).toBeInTheDocument();
+  });
+
+  it("練習履歴タブに切り替えると練習履歴画面（連続学習日数）が表示される", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+    await screen.findByText("Hello world.");
+
+    fireEvent.click(screen.getByRole("button", { name: "練習履歴" }));
+
+    expect(await screen.findByRole("heading", { name: "練習履歴" })).toBeInTheDocument();
+  });
+
+  it("英文選択画面の設定ボタンで設定画面が開き、閉じるボタンで英文選択画面に戻る", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+    await screen.findByText("Hello world.");
+    fireEvent.click(screen.getByRole("button", { name: "英文選択" }));
+    await screen.findByRole("heading", { name: "カテゴリ 01" });
+
+    fireEvent.click(screen.getByRole("button", { name: "設定" }));
+    expect(await screen.findByLabelText("Google DriveのフォルダID")).toBeInTheDocument();
+    // 設定画面表示中はタブナビゲーションを隠す
+    expect(screen.queryByRole("button", { name: "練習" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "閉じる" }));
+    expect(await screen.findByRole("heading", { name: "カテゴリ 01" })).toBeInTheDocument();
   });
 });
