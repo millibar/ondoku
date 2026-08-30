@@ -60,6 +60,42 @@ describe("ContentSelectionScreen", () => {
     expect(screen.queryByText("Good morning.")).not.toBeInTheDocument();
   });
 
+  it("カテゴリはカテゴリ名の文字列ソートではなく、英文の通し番号順（itemsの並び順）に表示される", () => {
+    // カテゴリ名がゼロ埋めされていない場合、文字列ソートだと "1","10","2" の順に
+    // なってしまう。通し番号（id）順であれば "2"→"10"→"1" の順で表示されるべき
+    const items = [
+      {
+        id: 1,
+        categoryId: "2",
+        englishText: "A",
+        repeatingCount: 0,
+        shadowingCount: 0,
+        isFavorite: false,
+      },
+      {
+        id: 2,
+        categoryId: "10",
+        englishText: "B",
+        repeatingCount: 0,
+        shadowingCount: 0,
+        isFavorite: false,
+      },
+      {
+        id: 3,
+        categoryId: "1",
+        englishText: "C",
+        repeatingCount: 0,
+        shadowingCount: 0,
+        isFavorite: false,
+      },
+    ];
+    renderScreen({ items, selectedContentIds: [] });
+    const headingNames = screen
+      .getAllByRole("heading", { level: 2 })
+      .map((heading) => heading.textContent?.replace(/\s+/g, " ").trim());
+    expect(headingNames).toEqual(["カテゴリ 2 0/1", "カテゴリ 10 0/1", "カテゴリ 1 0/1"]);
+  });
+
   it("カテゴリ見出しを展開すると、配下に該当英文が表示される", () => {
     renderScreen();
     expandCategory("01");

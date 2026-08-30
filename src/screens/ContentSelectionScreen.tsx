@@ -32,8 +32,11 @@ export function ContentSelectionScreen({
 }: ContentSelectionScreenProps) {
   const selected = useMemo(() => new Set(selectedContentIds), [selectedContentIds]);
 
+  // カテゴリ名の文字列ソートではなく、英文の通し番号順（itemsの並び順。id昇順を想定）で
+  // 最初に出現した順にカテゴリを並べる。文字列ソートだと非ゼロ埋めのカテゴリ名
+  // （"1","2",...,"10",...）が "1,10,11,...,2,20,..." のような順になってしまうため
   const categories = useMemo(
-    () => Array.from(new Set(items.map((item) => item.categoryId))).sort(),
+    () => Array.from(new Set(items.map((item) => item.categoryId))),
     [items],
   );
 
@@ -113,7 +116,7 @@ export function ContentSelectionScreen({
                   aria-expanded={isExpanded}
                   onClick={() => toggleCategoryCollapsed(categoryId)}
                 >
-                  カテゴリ {categoryId}
+                  カテゴリ {categoryId}{" "}
                   <span className="content-selection-screen__category-count">
                     {categorySelectedCount}/{categoryItems.length}
                   </span>
