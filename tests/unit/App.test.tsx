@@ -127,6 +127,32 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
   });
 
+  it("お気に入りが1件も無い状態で「お気に入りのみ表示」をONにすると、案内メッセージが表示され再生系ボタンがdisabledになる（回帰テスト）", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    // SAMPLE_CONTENTはお気に入り登録されていない（練習記録なし）
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+    expect(await screen.findByText("Hello world.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText("お気に入りのみ表示"));
+
+    expect(
+      await screen.findByText(
+        "練習対象の英文が選択されていません。英文選択画面で選択するか、「お気に入りのみ表示」のチェックを外してください。",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "再生" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
+
+    // 外すと復帰する
+    fireEvent.click(screen.getByLabelText("お気に入りのみ表示"));
+    expect(await screen.findByText("Hello world.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "再生" })).toBeEnabled();
+  });
+
   it("英文選択タブに切り替えると英文選択画面が表示される", async () => {
     saveDriveSettings({ rootFolderId: "folder-1" });
     vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);

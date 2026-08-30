@@ -578,7 +578,15 @@ function PracticeContainer({
   // 出題範囲が0件（練習対象チェックがすべてOFF、またはお気に入りのみ表示ONで
   // お気に入りが1件も無い場合）はcontent=nullとなり、PracticeScreen側で
   // 案内メッセージ・再生系ボタンのdisabled表示を行う。参照: docs/spec.md 8.0節
-  const currentContent = contentsById.get(engine.currentContentId) ?? null;
+  //
+  // playlistが空になった直後は、usePlaybackEngine内部のcurrentContentIdが
+  // （stopped中に限りリセットする設計のため）以前の値のまま残ることがある。
+  // その値が「今も存在するコンテンツ」であるだけでcontent非null扱いにすると、
+  // 出題範囲外のコンテンツを表示したまま再生系ボタンが有効になってしまうため、
+  // 出題範囲（playlist）に含まれているかどうかも確認する
+  const currentContent = playlist.includes(engine.currentContentId)
+    ? (contentsById.get(engine.currentContentId) ?? null)
+    : null;
   const currentIndex = playlist.length === 0 ? 0 : playlist.indexOf(engine.currentContentId) + 1;
   const isFavorite = currentContent ? (records.get(currentContent.id)?.isFavorite ?? false) : false;
 
