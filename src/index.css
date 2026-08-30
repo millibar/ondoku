@@ -528,6 +528,23 @@ select {
   box-shadow: var(--shadow-sm);
 }
 
+/* 出題対象が無い場合、ContentTextの代わりに表示する案内メッセージ。
+   同じ枠内に収まるよう.content-textと共通のスタイルにする */
+.practice-screen__empty-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  margin: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 .content-text__english {
   font-size: 1.25rem;
   font-weight: 600;

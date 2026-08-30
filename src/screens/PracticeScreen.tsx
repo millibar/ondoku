@@ -8,7 +8,9 @@ import type { Content, OrderSettings, PracticeMode } from "../types";
 // 練習画面。参照: docs/spec.md 4章、5.3節、5.3.1節、5.3.2節
 
 export interface PracticeScreenProps {
-  content: Content;
+  // 出題範囲が0件（練習対象チェックがすべてOFF、またはお気に入りのみ表示ONで
+  // お気に入りが1件も無い場合等）はnullになる。参照: docs/spec.md 8.0節
+  content: Content | null;
   practiceMode: PracticeMode;
   orderSettings: OrderSettings;
   onChangePracticeMode: (mode: PracticeMode) => void;
@@ -60,8 +62,8 @@ export function PracticeScreen({
       </header>
 
       <div className="practice-screen__meta">
-        <span>#{content.id}</span>
-        <span>カテゴリ {content.categoryId}</span>
+        <span>{content ? `#${content.id}` : "-"}</span>
+        <span>{content ? `カテゴリ ${content.categoryId}` : "-"}</span>
         <span>
           {currentIndex}/{totalCount}
         </span>
@@ -119,12 +121,18 @@ export function PracticeScreen({
         </button>
       </div>
 
-      <ContentText
-        englishText={content.englishText}
-        japaneseText={content.japaneseText}
-        showEnglish={showEnglish}
-        showJapanese={showJapanese}
-      />
+      {content ? (
+        <ContentText
+          englishText={content.englishText}
+          japaneseText={content.japaneseText}
+          showEnglish={showEnglish}
+          showJapanese={showJapanese}
+        />
+      ) : (
+        <p className="practice-screen__empty-message">
+          練習対象の英文が選択されていません。英文選択画面で選択するか、「お気に入りのみ表示」のチェックを外してください。
+        </p>
+      )}
 
       <label htmlFor="favoritesOnly">
         <input
@@ -141,6 +149,7 @@ export function PracticeScreen({
       <PlaybackControls
         status={playbackStatus}
         isFavorite={isFavorite}
+        disabled={content === null}
         onPlay={onPlay}
         onStop={onStop}
         onNext={onNext}
