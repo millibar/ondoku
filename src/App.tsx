@@ -201,6 +201,16 @@ function App() {
     setScreen({ name: "login" });
   }
 
+  // 一覧画面・設定画面の両方から呼ばれる「同期」ボタンの共通ハンドラ
+  function handleSync() {
+    const driveSettings = getDriveSettings();
+    if (driveSettings) {
+      void runSync(driveSettings.rootFolderId);
+    } else {
+      setSyncError("Driveフォルダが設定されていません。設定画面から設定してください。");
+    }
+  }
+
   async function handleToggleFavorite(id: number) {
     const current = records.get(id);
     await setFavoriteRecord(id, !(current?.isFavorite ?? false));
@@ -262,14 +272,7 @@ function App() {
             setScreen({ name: "practice", contentId: id, playlist: contents.map((c) => c.id) })
           }
           onToggleFavorite={(id) => void handleToggleFavorite(id)}
-          onSync={() => {
-            const driveSettings = getDriveSettings();
-            if (driveSettings) {
-              void runSync(driveSettings.rootFolderId);
-            } else {
-              setSyncError("Driveフォルダが設定されていません。設定画面から設定してください。");
-            }
-          }}
+          onSync={handleSync}
           onOpenSettings={() => setScreen({ name: "settings" })}
         />
       );
@@ -296,6 +299,8 @@ function App() {
             setSettingsVersion((v) => v + 1);
             setScreen({ name: "list" });
           }}
+          syncError={syncError}
+          onSync={handleSync}
           onLogout={handleLogout}
           onBack={() => setScreen({ name: "list" })}
         />

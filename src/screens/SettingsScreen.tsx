@@ -1,15 +1,26 @@
 import { useState, type FormEvent } from "react";
 
-// 設定画面（Drive接続設定・ログアウト）。参照: docs/spec.md 4章
+// 設定画面（Drive接続設定・同期・ログアウト）。参照: docs/spec.md 4.2.1節
+// 英文選択画面から開くサブ画面（タブナビゲーションには含めない）
 
 export interface SettingsScreenProps {
   currentFolderId: string;
+  // 同期に失敗した場合のエラーメッセージ（オフライン時など）。参照: docs/spec.md 11章
+  syncError?: string | null;
   onSave: (folderId: string) => void;
+  onSync: () => void;
   onLogout: () => void;
   onBack: () => void;
 }
 
-export function SettingsScreen({ currentFolderId, onSave, onLogout, onBack }: SettingsScreenProps) {
+export function SettingsScreen({
+  currentFolderId,
+  syncError = null,
+  onSave,
+  onSync,
+  onLogout,
+  onBack,
+}: SettingsScreenProps) {
   const [folderId, setFolderId] = useState(currentFolderId);
 
   function handleSubmit(event: FormEvent) {
@@ -20,10 +31,10 @@ export function SettingsScreen({ currentFolderId, onSave, onLogout, onBack }: Se
   return (
     <div className="settings-screen">
       <header>
-        <button type="button" onClick={onBack}>
-          戻る
-        </button>
         <h1>設定</h1>
+        <button type="button" onClick={onBack}>
+          閉じる
+        </button>
       </header>
 
       <form className="settings-screen__form" onSubmit={handleSubmit}>
@@ -38,6 +49,11 @@ export function SettingsScreen({ currentFolderId, onSave, onLogout, onBack }: Se
           保存
         </button>
       </form>
+
+      <button type="button" onClick={onSync}>
+        同期
+      </button>
+      {syncError && <p role="alert">{syncError}</p>}
 
       <button type="button" className="button--danger settings-screen__logout" onClick={onLogout}>
         ログアウト
