@@ -279,7 +279,7 @@ WP10完了・マージ後にユーザーから寄せられた改善要望・不�
 - **状況**: ✅ 完了（2026-08-30、`feature/selection-screen-collapsible-categories`ブランチ）
   - レッド・グリーン・リファクタリングで実装。単体テスト204件すべて成功、lint・format・buildも成功を確認済み
   - 実機確認（npm run dev + Playwright）で、カテゴリごとの独立した開閉・全体サマリー表示を確認済み
-  - `main`へのマージはユーザー承認待ち
+  - ✅ ユーザー承認を得て`main`へマージ済み（2026-08-30）
 
 ## 5. GitHub Pagesへのデプロイ方針
 
