@@ -147,6 +147,35 @@ WP3で実装した画面・コンポーネントを、実際のGoogle認証・In
 - E2E（Playwright）シナリオの拡充（仕様書12章）
 - **完了条件**: テスト計画書に定めるシナリオがすべて成功し、実機で一連の練習フローが問題なく行える
 
+## 4.1 ページ構成変更（本改訂）の作業パッケージ
+
+WP0〜WP5でひととおり動作するアプリが完成した後、`docs/requirements.md`・`docs/spec.md`の改訂（3タブ構成＋設定サブ画面への再編）を実装するための作業パッケージ。既存のWP0〜WP5と同様、1パッケージ＝1ブランチとし、ユーザー承認を得てから`main`へマージする。各WPの詳細はユーザーと1ステップずつ相談しながら確定させる（本ドキュメントには合意できた範囲から追記していく）。
+
+- WP6: ドメイン・データ層の拡張
+- WP7: 英文選択画面のリニューアル
+- WP8: 練習画面の拡張
+- WP9: 練習履歴画面の新設
+- WP10: タブナビゲーション配線・画面統合（`App.tsx`）
+
+### WP6: ドメイン・データ層の拡張（`feature/restructure-domain-data`）
+
+- 型定義（`src/types/index.ts`）
+  - `DailyLog`に`repeatingCount`・`shadowingCount`を追加
+  - `PracticeSessionState`から`filter`（`categoryId`/`favoritesOnly`）を削除し、`practiceMode`・`orderSettings`・`currentContentId`・`shuffledHistory`のみに整理
+  - 新規`SelectionState { selectedContentIds: number[]; favoritesOnly: boolean }`を追加（英文選択画面・練習画面の両方から参照する出題範囲の選択状態。練習セッション固有の`PracticeSessionState`とは責務を分け、別の型・別のlocalStorageキーで管理する）
+- データ層（`src/data/`）
+  - `db.ts`: `upsertDailyLog(date)` → `incrementDailyLog(date, mode)`に変更（`incrementPracticeCount`と同じパターンで、当日レコードのモード別カウントをインクリメント）
+  - `localStorage.ts`: `SelectionState`用に`getSelectionState`/`saveSelectionState`を追加（キー: `ondoku:selectionState`）
+- ドメインロジック（`src/domain/`、Vitestで単体テスト）
+  - `src/domain/selection.ts`（新規）: `buildPlaylist(contents, selectedContentIds, favoritesOnly, isFavorite)` — 出題範囲（プレイリスト）をid昇順で算出する純粋関数
+  - `src/domain/dailyGrid.ts`（新規）: `buildDailySeries(dailyLogs, today, days)` — 直近N日分の日別カウント配列を、欠損日を0件で埋めて返す純粋関数（7日間棒グラフ・196日ヒートマップで共用）
+  - `src/domain/grid.ts`の`frequencyLevel`は変更なし（日別グリッドにも再利用）
+- ビルドを通すための最小限の追随修正（本格的な配線はWP10）
+  - `App.tsx`内`upsertDailyLog`呼び出し → `incrementDailyLog`に置き換え
+  - `PracticeContainer`の`savePracticeSessionState`呼び出しから`filter`を削除
+- **完了条件**: 上記の型・データ層・ドメインロジックの変更を行い、新規ロジックの単体テストが全て成功、既存テスト（`upsertDailyLog`関連は`incrementDailyLog`向けに書き換え）もすべて成功、lint・buildが通ること
+- **状況**: 未着手
+
 ## 5. GitHub Pagesへのデプロイ方針
 
 - GitHub Actionsで`main`ブランチへのマージをトリガーに、`npm run build`の成果物をGitHub Pagesへ公開する
