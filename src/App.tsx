@@ -20,6 +20,7 @@ import {
   savePracticeSessionState,
   saveSelectionState,
 } from "./data/localStorage";
+import { refreshAppCache } from "./data/serviceWorker";
 import { buildDailySeries } from "./domain/dailyGrid";
 import { frequencyLevel } from "./domain/grid";
 import type { PlaybackStatus } from "./domain/playback";
@@ -413,6 +414,7 @@ function App() {
                 }}
                 syncError={syncError}
                 onSync={handleSync}
+                onRefreshCache={() => void refreshAppCache()}
                 onLogout={handleLogout}
                 onBack={() => setShowSettings(false)}
               />

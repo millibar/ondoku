@@ -346,6 +346,20 @@ select {
   max-width: 360px;
 }
 
+.settings-screen__cache {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.settings-screen__cache-description {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
 .settings-screen__logout {
   margin-top: auto;
   align-self: flex-start;
