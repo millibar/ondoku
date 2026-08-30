@@ -23,6 +23,11 @@ function renderScreen(overrides: Partial<Parameters<typeof PracticeScreen>[0]> =
       playbackStatus="stopped"
       progress={0}
       isFavorite={false}
+      currentIndex={1}
+      totalCount={560}
+      streak={3}
+      favoritesOnly={false}
+      onChangeFavoritesOnly={vi.fn()}
       onPlay={vi.fn()}
       onStop={vi.fn()}
       onNext={vi.fn()}
@@ -101,5 +106,33 @@ describe("PracticeScreen", () => {
     renderScreen({ onNext });
     fireEvent.click(screen.getByRole("button", { name: "次へ" }));
     expect(onNext).toHaveBeenCalledTimes(1);
+  });
+
+  it("現在の英文の通し番号・カテゴリが表示される", () => {
+    renderScreen();
+    expect(screen.getByText("#1")).toBeInTheDocument();
+    expect(screen.getByText("カテゴリ 01")).toBeInTheDocument();
+  });
+
+  it("出題範囲内の総数と現在のインデックスが表示される", () => {
+    renderScreen({ currentIndex: 3, totalCount: 560 });
+    expect(screen.getByText("3/560")).toBeInTheDocument();
+  });
+
+  it("連続学習日数が表示される", () => {
+    renderScreen({ streak: 5 });
+    expect(screen.getByText(/5日/)).toBeInTheDocument();
+  });
+
+  it("お気に入りのみ表示チェックボックスの状態がfavoritesOnlyを反映する", () => {
+    renderScreen({ favoritesOnly: true });
+    expect(screen.getByLabelText("お気に入りのみ表示")).toBeChecked();
+  });
+
+  it("お気に入りのみ表示チェックボックスを操作するとonChangeFavoritesOnlyが呼ばれる", () => {
+    const onChangeFavoritesOnly = vi.fn();
+    renderScreen({ favoritesOnly: false, onChangeFavoritesOnly });
+    fireEvent.click(screen.getByLabelText("お気に入りのみ表示"));
+    expect(onChangeFavoritesOnly).toHaveBeenCalledWith(true);
   });
 });

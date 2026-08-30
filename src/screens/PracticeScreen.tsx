@@ -16,11 +16,18 @@ export interface PracticeScreenProps {
   playbackStatus: PlaybackStatus;
   progress: number;
   isFavorite: boolean;
+  // 出題範囲内での現在位置（1始まり）と総数。「n/総数」の表示に使う
+  currentIndex: number;
+  totalCount: number;
+  streak: number;
+  favoritesOnly: boolean;
+  onChangeFavoritesOnly: (value: boolean) => void;
   onPlay: () => void;
   onStop: () => void;
   onNext: () => void;
   onPrev: () => void;
   onToggleFavorite: () => void;
+  // タブナビゲーション導入（WP10）までの暫定的な画面遷移。参照: docs/implementation-plan.md WP8
   onBack: () => void;
 }
 
@@ -33,6 +40,11 @@ export function PracticeScreen({
   playbackStatus,
   progress,
   isFavorite,
+  currentIndex,
+  totalCount,
+  streak,
+  favoritesOnly,
+  onChangeFavoritesOnly,
   onPlay,
   onStop,
   onNext,
@@ -49,7 +61,16 @@ export function PracticeScreen({
         <button type="button" onClick={onBack}>
           戻る
         </button>
+        <p className="practice-screen__streak">連続学習日数: {streak}日</p>
       </header>
+
+      <div className="practice-screen__meta">
+        <span>#{content.id}</span>
+        <span>カテゴリ {content.categoryId}</span>
+        <span>
+          {currentIndex}/{totalCount}
+        </span>
+      </div>
 
       <div className="practice-screen__mode-settings">
         <div role="group" aria-label="練習モード">
@@ -109,6 +130,16 @@ export function PracticeScreen({
         showEnglish={showEnglish}
         showJapanese={showJapanese}
       />
+
+      <label htmlFor="favoritesOnly">
+        <input
+          id="favoritesOnly"
+          type="checkbox"
+          checked={favoritesOnly}
+          onChange={(event) => onChangeFavoritesOnly(event.target.checked)}
+        />
+        お気に入りのみ表示
+      </label>
 
       <ProgressBar status={playbackStatus} progress={progress} />
 
