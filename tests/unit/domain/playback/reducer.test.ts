@@ -145,6 +145,44 @@ describe("playbackReducer", () => {
     });
   });
 
+  describe("出題範囲（playlist）が0件の場合", () => {
+    // 参照: docs/spec.md 8.0節。お気に入りのみ表示ONでお気に入りが1件も無い
+    // 場合等、playlistが空になっても、undefinedなcurrentContentIdを生成して
+    // DBアクセスでクラッシュしたりしないよう、あらゆるイベントを安全に無視する
+    it("PLAYを送ってもstoppedのままで、currentContentIdはundefinedにならない", () => {
+      const state = makeState({ status: "stopped", currentContentId: 1 });
+      const next = playbackReducer(state, { type: "PLAY" }, makeContext({ playlist: [] }));
+      expect(next.status).toBe("stopped");
+      expect(next.currentContentId).toBe(1);
+    });
+
+    it("再生中にAUDIO_ENDEDを送ってもstoppedに落ち着き、currentContentIdはundefinedにならない", () => {
+      const state = makeState({ status: "playing", currentContentId: 1 });
+      const next = playbackReducer(
+        state,
+        { type: "AUDIO_ENDED" },
+        makeContext({ playlist: [], practiceMode: "shadowing" }),
+      );
+      expect(next.status).toBe("stopped");
+      expect(next.currentContentId).toBe(1);
+    });
+
+    it("待機中にWAIT_ENDEDを送ってもstoppedに落ち着く", () => {
+      const state = makeState({ status: "waiting", currentContentId: 1 });
+      const next = playbackReducer(state, { type: "WAIT_ENDED" }, makeContext({ playlist: [] }));
+      expect(next.status).toBe("stopped");
+      expect(next.currentContentId).toBe(1);
+    });
+
+    it("NEXT/PREVを送っても状態が変化しない", () => {
+      const state = makeState({ status: "stopped", currentContentId: 1 });
+      const nextResult = playbackReducer(state, { type: "NEXT" }, makeContext({ playlist: [] }));
+      const prevResult = playbackReducer(state, { type: "PREV" }, makeContext({ playlist: [] }));
+      expect(nextResult).toEqual(state);
+      expect(prevResult).toEqual(state);
+    });
+  });
+
   describe("停止ボタン", () => {
     it("playingからstoppedに遷移する", () => {
       const state = makeState({ status: "playing" });

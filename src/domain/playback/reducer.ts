@@ -10,6 +10,15 @@ export function playbackReducer(
   context: PlaybackContext,
   random: RandomFn = Math.random,
 ): PlaybackState {
+  // 出題範囲が0件（練習対象チェックがすべてOFF、またはお気に入りのみ表示ONで
+  // お気に入りが1件も無い場合等）は、いかなるイベントも安全に無視しstoppedのまま
+  // にする。playlist[0]（undefined）をcurrentContentIdにしてしまうと、
+  // 呼び出し側でDBアクセス時にIndexedDBのDataError（キー未指定）を
+  // 引き起こすため、ここで防ぐ。参照: docs/spec.md 8.0節
+  if (context.playlist.length === 0) {
+    return state.status === "stopped" ? state : { ...state, status: "stopped" };
+  }
+
   switch (event.type) {
     case "PLAY":
       return state.status === "stopped" ? { ...state, status: "playing" } : state;
