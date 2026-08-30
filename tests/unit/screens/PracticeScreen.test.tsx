@@ -45,18 +45,24 @@ describe("PracticeScreen", () => {
     expect(screen.getByText("こんにちは世界。")).toBeInTheDocument();
   });
 
-  it("日本語訳の表示切り替えボタンで日本語訳のみ非表示にできる", () => {
-    renderScreen();
-    fireEvent.click(screen.getByRole("button", { name: "日本語訳を隠す" }));
-    expect(screen.getByText("Hello world.")).toBeInTheDocument();
-    expect(screen.queryByText("こんにちは世界。")).not.toBeInTheDocument();
-  });
+  it("モード切替・番号/総数・プログレスバー・再生コントロール・カテゴリ・通し番号・英文の順に並ぶ", () => {
+    // 英文は文字数でカードの高さが変わるため、他の操作UIより下（末尾）に
+    // 配置し、UIの位置が英文ごとに動かないようにする。参照: docs/spec.md 5.3節
+    const { container } = renderScreen();
+    const text = container.textContent ?? "";
+    const modeToggleIndex = text.indexOf("リピーティング");
+    const indexDisplayIndex = text.indexOf("1/560");
+    const playbackControlsIndex = text.indexOf("前へ");
+    const categoryIndex = text.indexOf("カテゴリ 01");
+    const contentNumberIndex = text.indexOf("#1");
+    const englishTextIndex = text.indexOf("Hello world.");
 
-  it("英文の表示切り替えボタンで英文のみ非表示にできる", () => {
-    renderScreen();
-    fireEvent.click(screen.getByRole("button", { name: "英文を隠す" }));
-    expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
-    expect(screen.getByText("こんにちは世界。")).toBeInTheDocument();
+    expect(modeToggleIndex).toBeGreaterThanOrEqual(0);
+    expect(modeToggleIndex).toBeLessThan(indexDisplayIndex);
+    expect(indexDisplayIndex).toBeLessThan(playbackControlsIndex);
+    expect(playbackControlsIndex).toBeLessThan(categoryIndex);
+    expect(categoryIndex).toBeLessThan(contentNumberIndex);
+    expect(contentNumberIndex).toBeLessThan(englishTextIndex);
   });
 
   it("シャドーイングボタンを押すとonChangePracticeModeが'shadowing'で呼ばれる", () => {

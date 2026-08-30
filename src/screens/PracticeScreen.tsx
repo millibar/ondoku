@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ContentText } from "../components/ContentText";
 import { PlaybackControls } from "../components/PlaybackControls";
 import { ProgressBar } from "../components/ProgressBar";
@@ -6,6 +5,9 @@ import type { PlaybackStatus } from "../domain/playback";
 import type { Content, OrderSettings, PracticeMode } from "../types";
 
 // 練習画面。参照: docs/spec.md 4章、5.3節、5.3.1節、5.3.2節
+//
+// 英文・日本語訳は文字数によってカードの高さが変わるため、他の操作UIより
+// 下（末尾）に配置し、英文が変わってもUIの位置が動かないようにしている
 
 export interface PracticeScreenProps {
   // 出題範囲が0件（練習対象チェックがすべてOFF、またはお気に入りのみ表示ONで
@@ -51,9 +53,6 @@ export function PracticeScreen({
   onPrev,
   onToggleFavorite,
 }: PracticeScreenProps) {
-  const [showEnglish, setShowEnglish] = useState(true);
-  const [showJapanese, setShowJapanese] = useState(true);
-
   return (
     <div className="practice-screen">
       <header>
@@ -61,31 +60,29 @@ export function PracticeScreen({
         <p className="practice-screen__streak">連続学習日数: {streak}日</p>
       </header>
 
-      <div className="practice-screen__meta">
-        <span>{content ? `#${content.id}` : "-"}</span>
-        <span>{content ? `カテゴリ ${content.categoryId}` : "-"}</span>
-        <span>
-          {currentIndex}/{totalCount}
-        </span>
+      {/* 1. リピーティング／シャドーイング切り替え */}
+      <div role="group" aria-label="練習モード" className="practice-screen__mode-toggle">
+        <button
+          type="button"
+          aria-pressed={practiceMode === "repeating"}
+          onClick={() => onChangePracticeMode("repeating")}
+        >
+          リピーティング
+        </button>
+        <button
+          type="button"
+          aria-pressed={practiceMode === "shadowing"}
+          onClick={() => onChangePracticeMode("shadowing")}
+        >
+          シャドーイング
+        </button>
       </div>
 
-      <div className="practice-screen__mode-settings">
-        <div role="group" aria-label="練習モード">
-          <button
-            type="button"
-            aria-pressed={practiceMode === "repeating"}
-            onClick={() => onChangePracticeMode("repeating")}
-          >
-            リピーティング
-          </button>
-          <button
-            type="button"
-            aria-pressed={practiceMode === "shadowing"}
-            onClick={() => onChangePracticeMode("shadowing")}
-          >
-            シャドーイング
-          </button>
-        </div>
+      {/* 2. 現在の番号/総数・ランダム再生・1リピート再生・お気に入りのみ表示 */}
+      <div className="practice-screen__settings-row">
+        <span className="practice-screen__index">
+          {currentIndex}/{totalCount}
+        </span>
 
         <label htmlFor="isRandom">
           <input
@@ -110,52 +107,58 @@ export function PracticeScreen({
           />
           1リピート再生
         </label>
+
+        <label htmlFor="favoritesOnly">
+          <input
+            id="favoritesOnly"
+            type="checkbox"
+            checked={favoritesOnly}
+            onChange={(event) => onChangeFavoritesOnly(event.target.checked)}
+          />
+          お気に入りのみ表示
+        </label>
       </div>
 
-      <div className="practice-screen__display-toggles">
-        <button type="button" onClick={() => setShowEnglish((v) => !v)}>
-          {showEnglish ? "英文を隠す" : "英文を表示"}
-        </button>
-        <button type="button" onClick={() => setShowJapanese((v) => !v)}>
-          {showJapanese ? "日本語訳を隠す" : "日本語訳を表示"}
-        </button>
-      </div>
-
-      {content ? (
-        <ContentText
-          englishText={content.englishText}
-          japaneseText={content.japaneseText}
-          showEnglish={showEnglish}
-          showJapanese={showJapanese}
-        />
-      ) : (
-        <p className="practice-screen__empty-message">
-          練習対象の英文が選択されていません。英文選択画面で選択するか、「お気に入りのみ表示」のチェックを外してください。
-        </p>
-      )}
-
-      <label htmlFor="favoritesOnly">
-        <input
-          id="favoritesOnly"
-          type="checkbox"
-          checked={favoritesOnly}
-          onChange={(event) => onChangeFavoritesOnly(event.target.checked)}
-        />
-        お気に入りのみ表示
-      </label>
-
+      {/* 3. プログレスバー */}
       <ProgressBar status={playbackStatus} progress={progress} />
 
+      {/* 4. 前へ・再生・停止・次へボタン */}
       <PlaybackControls
         status={playbackStatus}
-        isFavorite={isFavorite}
         disabled={content === null}
         onPlay={onPlay}
         onStop={onStop}
         onNext={onNext}
         onPrev={onPrev}
-        onToggleFavorite={onToggleFavorite}
       />
+
+      {/* 5. カテゴリ */}
+      <p className="practice-screen__category">
+        {content ? `カテゴリ ${content.categoryId}` : "-"}
+      </p>
+
+      {/* 6. 通し番号・お気に入りボタン */}
+      <div className="practice-screen__content-meta">
+        <span className="practice-screen__content-number">{content ? `#${content.id}` : "-"}</span>
+        <button
+          type="button"
+          className="button--favorite"
+          aria-pressed={isFavorite}
+          disabled={content === null}
+          onClick={onToggleFavorite}
+        >
+          {isFavorite ? "お気に入りから解除" : "お気に入りに追加"}
+        </button>
+      </div>
+
+      {/* 7. 英文・日本語訳（文字数でカードの高さが変わるため最後に配置する） */}
+      {content ? (
+        <ContentText englishText={content.englishText} japaneseText={content.japaneseText} />
+      ) : (
+        <p className="practice-screen__empty-message">
+          練習対象の英文が選択されていません。英文選択画面で選択するか、「お気に入りのみ表示」のチェックを外してください。
+        </p>
+      )}
     </div>
   );
 }
