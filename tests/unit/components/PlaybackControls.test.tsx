@@ -101,6 +101,26 @@ describe("PlaybackControls", () => {
     expect(screen.getByRole("button", { name: "前へ" })).toBeEnabled();
   });
 
+  it("disabled=trueのとき、全ボタンが無効になる（出題対象が無い場合など）", () => {
+    render(
+      <PlaybackControls
+        status="stopped"
+        isFavorite={false}
+        disabled={true}
+        onPlay={vi.fn()}
+        onStop={vi.fn()}
+        onNext={vi.fn()}
+        onPrev={vi.fn()}
+        onToggleFavorite={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "前へ" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "再生" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "停止" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "お気に入りに追加" })).toBeDisabled();
+  });
+
   it("isFavorite=trueのとき、お気に入り解除ボタンとして表示される", () => {
     render(
       <PlaybackControls

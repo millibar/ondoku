@@ -127,4 +127,39 @@ describe("PracticeScreen", () => {
     fireEvent.click(screen.getByLabelText("お気に入りのみ表示"));
     expect(onChangeFavoritesOnly).toHaveBeenCalledWith(true);
   });
+
+  describe("出題対象が無い場合（content=null）", () => {
+    it("英文の代わりに案内メッセージが表示される", () => {
+      renderScreen({ content: null });
+      expect(
+        screen.getByText(
+          "練習対象の英文が選択されていません。英文選択画面で選択するか、「お気に入りのみ表示」のチェックを外してください。",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it("再生系ボタン（前へ・再生・停止・次へ・お気に入り）がすべて無効になる", () => {
+      renderScreen({ content: null });
+      expect(screen.getByRole("button", { name: "前へ" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "再生" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "停止" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "お気に入りに追加" })).toBeDisabled();
+    });
+
+    it("お気に入りのみ表示チェックボックスは操作できる（解除して復帰できるようにするため）", () => {
+      const onChangeFavoritesOnly = vi.fn();
+      renderScreen({ content: null, favoritesOnly: true, onChangeFavoritesOnly });
+      const checkbox = screen.getByLabelText("お気に入りのみ表示");
+      expect(checkbox).not.toBeDisabled();
+      fireEvent.click(checkbox);
+      expect(onChangeFavoritesOnly).toHaveBeenCalledWith(false);
+    });
+
+    it("通し番号・カテゴリは「-」表示になる", () => {
+      renderScreen({ content: null, currentIndex: 0, totalCount: 0 });
+      expect(screen.getAllByText("-")).toHaveLength(2);
+      expect(screen.getByText("0/0")).toBeInTheDocument();
+    });
+  });
 });

@@ -218,6 +218,76 @@ describe("usePlaybackEngine", () => {
     expect(realPlayer.play).toHaveBeenLastCalledWith("blob://content-2");
   });
 
+  it("停止中にplaylistが変化し、現在のcurrentContentIdが新しいplaylistに含まれなくなった場合、先頭にリセットされる（お気に入りのみ表示のON/OFF切替等）", () => {
+    const player = createFakePlayer();
+    const { result, rerender } = renderHook(
+      (props: UsePlaybackEngineOptions) => usePlaybackEngine(props),
+      {
+        initialProps: {
+          playlist: [],
+          practiceMode: "shadowing" as const,
+          orderSettings: { isRandom: false, isRepeatOne: false },
+          initialContentId: 0,
+          player,
+          getAudioUrl,
+          onPlaybackCompleted: vi.fn(),
+        },
+      },
+    );
+
+    expect(result.current.currentContentId).toBe(0);
+
+    // 出題範囲が回復した（例: お気に入りのみ表示をOFFにした）
+    rerender({
+      playlist: [5, 6, 7],
+      practiceMode: "shadowing",
+      orderSettings: { isRandom: false, isRepeatOne: false },
+      initialContentId: 0,
+      player,
+      getAudioUrl,
+      onPlaybackCompleted: vi.fn(),
+    });
+
+    expect(result.current.currentContentId).toBe(5);
+    expect(result.current.status).toBe("stopped");
+  });
+
+  it("再生中・待機中はplaylistが変化しても割り込んでリセットしない（自動遷移時に最新のplaylistを参照して自然に解決するため）", () => {
+    const player = createFakePlayer();
+    const { result, rerender } = renderHook(
+      (props: UsePlaybackEngineOptions) => usePlaybackEngine(props),
+      {
+        initialProps: {
+          playlist: [1, 2, 3],
+          practiceMode: "shadowing" as const,
+          orderSettings: { isRandom: false, isRepeatOne: false },
+          initialContentId: 1,
+          player,
+          getAudioUrl,
+          onPlaybackCompleted: vi.fn(),
+        },
+      },
+    );
+
+    act(() => result.current.play());
+    expect(result.current.status).toBe("playing");
+
+    // 再生中にplaylistが変化し、現在のコンテンツが対象外になった
+    rerender({
+      playlist: [5, 6, 7],
+      practiceMode: "shadowing",
+      orderSettings: { isRandom: false, isRepeatOne: false },
+      initialContentId: 1,
+      player,
+      getAudioUrl,
+      onPlaybackCompleted: vi.fn(),
+    });
+
+    // 再生中の割り込みリセットは行わない
+    expect(result.current.currentContentId).toBe(1);
+    expect(result.current.status).toBe("playing");
+  });
+
   it("1リピート再生ONの場合、再生終了しても同じコンテンツが繰り返し再生される", () => {
     const player = createFakePlayer();
     const { result } = renderHook(() =>

@@ -107,7 +107,7 @@ describe("App", () => {
     );
   });
 
-  it("練習対象の英文が選択されていない場合、練習タブに案内メッセージが表示される", async () => {
+  it("練習対象の英文が選択されていない場合、練習画面のUIは残したまま案内メッセージと再生系ボタンのdisabledを表示する", async () => {
     saveDriveSettings({ rootFolderId: "folder-1" });
     // getAllContentsが空のままなので、選択状態も空 → 出題範囲が0件になる
     requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
@@ -116,9 +116,15 @@ describe("App", () => {
 
     expect(
       await screen.findByText(
-        "練習対象の英文が選択されていません。英文選択画面で選択してください。",
+        "練習対象の英文が選択されていません。英文選択画面で選択するか、「お気に入りのみ表示」のチェックを外してください。",
       ),
     ).toBeInTheDocument();
+    // 練習画面のUI（モード切替・タブナビゲーション）自体は残る
+    expect(screen.getByRole("button", { name: "リピーティング" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "英文選択" })).toBeInTheDocument();
+    // 再生系ボタンはdisabledになる
+    expect(screen.getByRole("button", { name: "再生" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
   });
 
   it("英文選択タブに切り替えると英文選択画面が表示される", async () => {

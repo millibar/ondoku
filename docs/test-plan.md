@@ -62,6 +62,11 @@
   - `waiting`中: 経過時間 / 待機時間（＝直前音声の`duration`）が正しく計算される
   - `stopped`中は0を返す
 
+#### `hooks/usePlaybackEngine.ts`（再生エンジンとplaybackReducerの結合）
+
+- `stopped`中にplaylistが変化し、現在の`currentContentId`が新しいplaylistに含まれなくなった場合（お気に入りのみ表示のON/OFF切替等で出題範囲が変わった場合）、先頭のコンテンツにリセットされる（仕様書8.0節）
+- `playing`/`waiting`中はplaylistが変化しても割り込んでリセットしない（次の自動遷移が最新のplaylistを参照して自然に解決するため）
+
 ### 4.3 `domain/streak.ts`（連続学習日数）
 
 - 練習日が1日も無い場合は0
@@ -126,12 +131,12 @@
 
 - `ProgressBar`: `playing`/`waiting`/`stopped`それぞれの状態で見た目（進捗値・スタイル区分）が切り替わる
 - `FrequencyGrid`: 560件分のデータを渡した際、各マスの色区分がデータ通りに反映される
-- `PlaybackControls`: 各ボタン押下で対応するコールバックが呼ばれる。状態（`playing`/`stopped`等）に応じてボタンの活性・非活性が正しく切り替わる
+- `PlaybackControls`: 各ボタン押下で対応するコールバックが呼ばれる。状態（`playing`/`stopped`等）に応じてボタンの活性・非活性が正しく切り替わる。`disabled=true`のとき全ボタンが無効になる
 - `ContentText`: 英文・日本語訳のON/OFFがそれぞれ独立して表示・非表示を切り替えられる
 - `ContentSelectionScreen`（旧`ContentListScreen`。参照: docs/spec.md 4.2節）: カテゴリごとに見出し・英文カードが表示される。練習対象チェックボックスが`selectedContentIds`を反映し、操作でコールバックが呼ばれる。カテゴリ見出しの全選択／全解除チェックボックス（全選択済み／未選択／一部選択済み＝indeterminateの3状態）が正しく表示・動作する。カテゴリ絞り込みで表示件数が変化する。お気に入りボタンでトグルできる
 - `SetupScreen`: フォルダID未入力時は次に進めない、入力後は`localStorage`に保存され次画面に遷移する
 - `SettingsScreen`（参照: docs/spec.md 4.2.1節）: フォルダID保存・同期ボタン・`syncError`表示・閉じるボタンが動作する
-- `PracticeScreen`（参照: docs/spec.md 4.1節）: モード切り替えUI（練習モード／ランダム再生スイッチ／1リピート再生スイッチ）の操作で内部状態が切り替わる。通し番号・カテゴリ・「現在のインデックス/総数」・連続学習日数が表示される。お気に入りのみ表示チェックボックスの操作で`onChangeFavoritesOnly`が呼ばれる
+- `PracticeScreen`（参照: docs/spec.md 4.1節、8.0節）: モード切り替えUI（練習モード／ランダム再生スイッチ／1リピート再生スイッチ）の操作で内部状態が切り替わる。通し番号・カテゴリ・「現在のインデックス/総数」・連続学習日数が表示される。お気に入りのみ表示チェックボックスの操作で`onChangeFavoritesOnly`が呼ばれる。`content=null`（出題対象が無い）の場合、案内メッセージが表示され、再生系ボタンがdisabledになる一方、お気に入りのみ表示チェックボックスは操作可能なまま残る
 - `WeeklyBarChart`（参照: docs/spec.md 9.4節）: 渡した日数分の棒が描画される。各棒の高さ（相対値）がリピーティング／シャドーイングの回数を反映する
 - `DailyHeatmapGrid`（参照: docs/spec.md 9.4節）: 渡されたセルの数だけマスを描画する。各マスの色区分（`data-level`）が日別の合計練習回数通りに反映される
 - `PracticeHistoryScreen`（参照: docs/spec.md 4.3節）: 連続学習日数・7日間棒グラフ・196日ヒートマップ・全英文グリッドがすべて表示される

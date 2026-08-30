@@ -565,25 +565,18 @@ function PracticeContainer({
     });
   }, [practiceMode, orderSettings, engine.currentContentId]);
 
-  const currentContent = contentsById.get(engine.currentContentId);
-  const currentIndex = playlist.indexOf(engine.currentContentId) + 1;
-  const isFavorite = records.get(engine.currentContentId)?.isFavorite ?? false;
-
   // 出題範囲が0件（練習対象チェックがすべてOFF、またはお気に入りのみ表示ONで
-  // お気に入りが1件も無い場合）は再生系UIを出さない。参照: docs/spec.md 8.0節
-  if (playlist.length === 0) {
-    return (
-      <p className="inline-status-message">
-        練習対象の英文が選択されていません。英文選択画面で選択してください。
-      </p>
-    );
-  }
+  // お気に入りが1件も無い場合）はcontent=nullとなり、PracticeScreen側で
+  // 案内メッセージ・再生系ボタンのdisabled表示を行う。参照: docs/spec.md 8.0節
+  const currentContent = contentsById.get(engine.currentContentId) ?? null;
+  const currentIndex = playlist.length === 0 ? 0 : playlist.indexOf(engine.currentContentId) + 1;
+  const isFavorite = currentContent ? (records.get(currentContent.id)?.isFavorite ?? false) : false;
 
   return (
     <>
       {/* 再生用の非表示audio要素 */}
       <audio ref={audioElRef} style={{ display: "none" }} />
-      {!audioReady || !currentContent ? (
+      {!audioReady ? (
         <p className="inline-status-message">音声を準備中...</p>
       ) : (
         <PracticeScreen
@@ -604,7 +597,9 @@ function PracticeContainer({
           onStop={engine.stop}
           onNext={engine.next}
           onPrev={engine.prev}
-          onToggleFavorite={() => onToggleFavorite(engine.currentContentId)}
+          onToggleFavorite={() => {
+            if (currentContent) onToggleFavorite(currentContent.id);
+          }}
         />
       )}
     </>
