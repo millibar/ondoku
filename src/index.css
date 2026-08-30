@@ -236,6 +236,7 @@ select {
    画面共通レイアウト
    ========================================================================== */
 .content-list-screen,
+.content-selection-screen,
 .practice-screen,
 .settings-screen {
   min-height: 100dvh;
@@ -249,6 +250,7 @@ select {
 
 /* コンテンツ一覧・練習・設定画面のヘッダーを上部固定にする */
 .content-list-screen > header,
+.content-selection-screen > header,
 .practice-screen > header,
 .settings-screen > header {
   position: sticky;
@@ -264,6 +266,7 @@ select {
   gap: 8px 12px;
 }
 
+.content-selection-screen > header h1,
 .settings-screen > header h1 {
   flex: 1;
 }
@@ -387,6 +390,83 @@ select {
 .content-list-screen__item-meta {
   font-size: 0.8125rem;
   color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   英文選択画面
+   参照: docs/spec.md 4.2節
+   ========================================================================== */
+.content-selection-screen__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.content-selection-screen__filters label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.content-selection-screen__category {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.content-selection-screen__category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.content-selection-screen__category-header h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.content-selection-screen__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.content-selection-screen__list li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.content-selection-screen__item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.content-selection-screen__item-number {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.content-selection-screen__item-text {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.content-selection-screen__item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 /* ==========================================================================

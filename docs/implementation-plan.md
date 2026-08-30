@@ -183,6 +183,23 @@ WP0〜WP5でひととおり動作するアプリが完成した後、`docs/requi
   - `App.tsx`の`upsertDailyLog`呼び出し・`savePracticeSessionState`の`filter`指定を追随修正（本格配線はWP10）
   - レッド・グリーン・リファクタリングで実装。新規テスト18件を含む単体テスト162件すべて成功、lint・format・buildも成功を確認済み
   - あわせて`docs/spec.md`のデータモデル（5.1・5.3節）を実装内容（`SelectionState`の型分割）に合わせて更新
+  - ✅ ユーザー承認を得て`main`へマージ済み（2026-08-30）
+
+### WP7: 英文選択画面のリニューアル（`feature/restructure-selection-screen`）
+
+- `screens/ContentSelectionScreen.tsx`（新規）: 旧`ContentListScreen`を置き換える英文選択画面（仕様書4.2節）
+  - カテゴリごとに見出し（`<section>`）を設け、配下に英文カードを表示
+  - 英文カード: 通し番号（`#id`）、英文テキスト、リピーティング／シャドーイング回数、お気に入りボタン、練習対象チェックボックス（`selectedContentIds`を反映）
+  - カテゴリ見出しの全選択／全解除チェックボックス（一部だけ選択済みの場合は`indeterminate`表示）
+  - カテゴリ絞り込み（表示のみに影響。複数カテゴリを同時に表示可能）
+  - 右上「設定」ボタン
+  - 出題範囲の実際の更新ロジック（チェック操作をどう`SelectionState`に反映するか）はコールバック（`onToggleContentSelection`/`onToggleCategorySelection`）として呼び出し元に委ね、画面コンポーネント自体はpropsで受け取ったデータの表示のみを担う（WP3以来の設計方針を踏襲）
+  - 旧`ContentListScreen.tsx`はWP10で置き換えるまで`App.tsx`から引き続き使用するため、このWPでは削除しない（`App.tsx`の実配線・お気に入りのみ表示フィルター廃止などの本格的な変更はWP10で行う）
+- `screens/SettingsScreen.tsx`: 仕様書4.2.1節に合わせて「同期」ボタン・`syncError`表示を追加し、閉じるボタンのラベルを「戻る」→「閉じる」に変更（`App.tsx`の一覧画面・設定画面で共通の同期ハンドラ`handleSync`を新設し配線）
+  - ログアウト機能は仕様書4.2.1節には明記されていないが、既存の動作する機能をあえて削除する積極的な理由が無いため、そのまま残した（気になる場合はご指摘ください）
+- **完了条件**: 上記画面のコンポーネントテストが成功、既存テスト・lint・format・buildがすべて成功すること
+- **状況**: ✅ 完了（2026-08-30、`feature/restructure-selection-screen`ブランチ）
+  - レッド・グリーン・リファクタリングで実装。新規テスト10件・`SettingsScreen`向け追加テストを含む単体テスト175件すべて成功、lint・format・buildも成功を確認済み
   - `main`へのマージはユーザー承認待ち
 
 ## 5. GitHub Pagesへのデプロイ方針

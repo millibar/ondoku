@@ -128,8 +128,9 @@
 - `FrequencyGrid`: 560件分のデータを渡した際、各マスの色区分がデータ通りに反映される
 - `PlaybackControls`: 各ボタン押下で対応するコールバックが呼ばれる。状態（`playing`/`stopped`等）に応じてボタンの活性・非活性が正しく切り替わる
 - `ContentText`: 英文・日本語訳のON/OFFがそれぞれ独立して表示・非表示を切り替えられる
-- `ContentListScreen`: カテゴリ絞り込み・お気に入り絞り込みで表示件数が変化する。お気に入りボタンでトグルできる
+- `ContentSelectionScreen`（旧`ContentListScreen`。参照: docs/spec.md 4.2節）: カテゴリごとに見出し・英文カードが表示される。練習対象チェックボックスが`selectedContentIds`を反映し、操作でコールバックが呼ばれる。カテゴリ見出しの全選択／全解除チェックボックス（全選択済み／未選択／一部選択済み＝indeterminateの3状態）が正しく表示・動作する。カテゴリ絞り込みで表示件数が変化する。お気に入りボタンでトグルできる
 - `SetupScreen`: フォルダID未入力時は次に進めない、入力後は`localStorage`に保存され次画面に遷移する
+- `SettingsScreen`（参照: docs/spec.md 4.2.1節）: フォルダID保存・同期ボタン・`syncError`表示・閉じるボタンが動作する
 - `PracticeScreen`: モード切り替えUI（練習モード／ランダム再生スイッチ／1リピート再生スイッチ）の操作で内部状態が切り替わる
 
 ## 6. E2Eテストシナリオ（Playwright）
