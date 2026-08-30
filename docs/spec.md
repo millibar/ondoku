@@ -143,6 +143,7 @@ ondoku/
 
 - Google DriveフォルダIDの入力欄、保存ボタン
 - 「同期」ボタン → Drive再取得
+- 「キャッシュを更新」ボタン: Service WorkerのCache Storage（プリキャッシュしたJS/CSS/HTML等のアプリシェル）と登録済みのService Worker自体をすべて削除し、ページを再読み込みする。これにより、PWAとしてキャッシュされた古いアプリの表示から最新のデプロイ内容に切り替えられる。IndexedDB（教材データ・練習履歴）・localStorage（Drive設定・練習状態）は対象外で削除されない
 - 「閉じる」ボタン → 英文選択画面に戻る
 
 ### 4.3 練習履歴画面（タブ3）

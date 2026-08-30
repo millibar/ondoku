@@ -127,6 +127,13 @@
 - 基準日（今日）が最後の要素として含まれる
 - 入力の`DailyLog`が日付順でなくても正しく処理される
 
+### 4.11 `data/serviceWorker.ts`（キャッシュ更新、仕様書4.2.1節）
+
+- Cache Storageの全キーに対して`delete`が呼ばれる
+- 登録済みのService Workerすべてに対して`unregister`が呼ばれる
+- 最後にページの再読み込み（`location.reload`）が呼ばれる
+- Cache Storage・Service Workerが利用できない環境でもクラッシュせず再読み込みする
+
 ## 5. コンポーネントテストケース（Testing Library）
 
 - `ProgressBar`: `playing`/`waiting`/`stopped`それぞれの状態で見た目（進捗値・スタイル区分）が切り替わる
@@ -135,7 +142,7 @@
 - `ContentText`: 英文・日本語訳のON/OFFがそれぞれ独立して表示・非表示を切り替えられる
 - `ContentSelectionScreen`（旧`ContentListScreen`。参照: docs/spec.md 4.2節）: カテゴリごとに見出し・英文カードが表示される。練習対象チェックボックスが`selectedContentIds`を反映し、操作でコールバックが呼ばれる。カテゴリ見出しの全選択／全解除チェックボックス（全選択済み／未選択／一部選択済み＝indeterminateの3状態）が正しく表示・動作する。カテゴリ見出しクリックで配下の英文カードの表示・非表示が切り替わる（開閉トグルはチェックボックス操作に影響しない）。カテゴリ見出しに「選択中/総数」が表示される。画面上部の全選択／全解除チェックボックスと「選択中/総数」表示が正しく動作する。お気に入りボタンでトグルできる
 - `SetupScreen`: フォルダID未入力時は次に進めない、入力後は`localStorage`に保存され次画面に遷移する
-- `SettingsScreen`（参照: docs/spec.md 4.2.1節）: フォルダID保存・同期ボタン・`syncError`表示・閉じるボタンが動作する
+- `SettingsScreen`（参照: docs/spec.md 4.2.1節）: フォルダID保存・同期ボタン・`syncError`表示・キャッシュを更新ボタン・閉じるボタンが動作する
 - `PracticeScreen`（参照: docs/spec.md 4.1節、8.0節）: モード切り替えUI（練習モード／ランダム再生スイッチ／1リピート再生スイッチ）の操作で内部状態が切り替わる。通し番号・カテゴリ・「現在のインデックス/総数」・連続学習日数が表示される。お気に入りのみ表示チェックボックスの操作で`onChangeFavoritesOnly`が呼ばれる。`content=null`（出題対象が無い）の場合、案内メッセージが表示され、再生系ボタンがdisabledになる一方、お気に入りのみ表示チェックボックスは操作可能なまま残る
 - `WeeklyBarChart`（参照: docs/spec.md 9.4節）: 渡した日数分の棒が描画される。各棒の高さ（相対値）がリピーティング／シャドーイングの回数を反映する
 - `DailyHeatmapGrid`（参照: docs/spec.md 9.4節）: 渡されたセルの数だけマスを描画する。各マスの色区分（`data-level`）が日別の合計練習回数通りに反映される

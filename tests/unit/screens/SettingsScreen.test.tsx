@@ -10,6 +10,7 @@ function renderScreen(overrides: Partial<Parameters<typeof SettingsScreen>[0]> =
       currentFolderId="folder-abc"
       onSave={vi.fn()}
       onSync={vi.fn()}
+      onRefreshCache={vi.fn()}
       onLogout={vi.fn()}
       onBack={vi.fn()}
       {...overrides}
@@ -48,6 +49,13 @@ describe("SettingsScreen", () => {
   it("syncErrorがnull（既定）のときはエラーメッセージが表示されない", () => {
     renderScreen();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("キャッシュを更新ボタンでonRefreshCacheが呼ばれる", () => {
+    const onRefreshCache = vi.fn();
+    renderScreen({ onRefreshCache });
+    fireEvent.click(screen.getByRole("button", { name: "キャッシュを更新" }));
+    expect(onRefreshCache).toHaveBeenCalledTimes(1);
   });
 
   it("ログアウトボタンでonLogoutが呼ばれる", () => {
