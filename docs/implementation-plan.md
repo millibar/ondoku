@@ -219,6 +219,19 @@ WP0〜WP5でひととおり動作するアプリが完成した後、`docs/requi
   - `screens/PracticeScreen.tsx`: 通し番号・カテゴリ・「n/総数」・連続学習日数・お気に入りのみ表示チェックボックスを追加
   - `App.tsx`: `currentIndex`/`totalCount`は`playlist`から実算出、`streak`は本配線、`favoritesOnly`は`PracticeContainer`内のローカルstateとして暫定配線
   - レッド・グリーン・リファクタリングで実装。新規テスト5件を含む単体テスト180件すべて成功、lint・format・buildも成功を確認済み
+  - ✅ ユーザー承認を得て`main`へマージ済み（2026-08-30）
+
+### WP9: 練習履歴画面の新設（`feature/practice-history-screen`）
+
+- `components/WeeklyBarChart.tsx`（新規）: 直近7日間、日ごとにリピーティング／シャドーイングの2本の棒によるグループ化棒グラフ。凡例あり。配色は`dataviz`スキルで検証済みのカテゴリカルペア（`#2a78d6`/`#eb6834`、ダーク時`#3987e5`/`#d95926`）を新規CSS変数として追加
+- `components/DailyHeatmapGrid.tsx`（新規）: 7行×28列（列優先で配置。`buildDailySeries`が返す固定長の連続日付配列をそのまま渡す想定）。配色は既存の頻度グリッドと共通の`--grid-level-0〜4`を再利用（同じ「練習頻度の大小」を表すため）。実カレンダーの曜日には厳密整列させない簡易方式（設計判断としてユーザー確認済み）
+- 全英文560マスグリッドは既存の`components/FrequencyGrid.tsx`をそのまま再利用（変更なし）
+- `screens/PracticeHistoryScreen.tsx`（新規）: ストリーク表示＋上記3つのグラフ/グリッドを並べる表示専念コンポーネント（`streak`・`weeklySeries`・`yearlySeries`・`contentCells`をpropsで受け取る）
+- `App.tsx`への配線は行わない（WP10でタブ組み込み時に実施。このWPは純粋な追加のみで既存コードに影響しない）
+- **完了条件**: 新規コンポーネント・画面のテストが成功、既存テスト・lint・format・buildがすべて成功すること
+- **状況**: ✅ 完了（2026-08-30、`feature/practice-history-screen`ブランチ）
+  - レッド・グリーン・リファクタリングで実装。新規テスト18件を含む単体テスト192件すべて成功、lint・format・buildも成功を確認済み
+  - `App.tsx`には一切手を入れていない（このWPは純粋な追加のみ）
   - `main`へのマージはユーザー承認待ち
 
 ## 5. GitHub Pagesへのデプロイ方針

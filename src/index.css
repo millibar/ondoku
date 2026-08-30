@@ -27,6 +27,11 @@
   --grid-level-3: #818cf8;
   --grid-level-4: #4338ca;
 
+  /* 練習履歴画面の棒グラフ用カテゴリカル配色（datavizスキルの検証済みペア。
+     参照: docs/implementation-plan.md WP9） */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -56,6 +61,9 @@
     --grid-level-2: #4c46b0;
     --grid-level-3: #6f68d8;
     --grid-level-4: #a5b0ff;
+
+    --color-series-1: #3987e5;
+    --color-series-2: #d95926;
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -238,6 +246,7 @@ select {
 .content-list-screen,
 .content-selection-screen,
 .practice-screen,
+.practice-history-screen,
 .settings-screen {
   min-height: 100dvh;
   max-width: 640px;
@@ -252,6 +261,7 @@ select {
 .content-list-screen > header,
 .content-selection-screen > header,
 .practice-screen > header,
+.practice-history-screen > header,
 .settings-screen > header {
   position: sticky;
   top: 0;
@@ -640,5 +650,159 @@ select {
 }
 
 .frequency-grid__cell[data-level="4"] {
+  background: var(--grid-level-4);
+}
+
+/* ==========================================================================
+   練習履歴画面
+   参照: docs/spec.md 4.3節、9.4節
+   ========================================================================== */
+.practice-history-screen__streak {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.practice-history-screen section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.practice-history-screen section h2 {
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+/* ==========================================================================
+   直近7日間の棒グラフ
+   参照: docs/spec.md 9.4節
+   ========================================================================== */
+.weekly-bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.weekly-bar-chart__legend {
+  display: flex;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.weekly-bar-chart__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.weekly-bar-chart__legend li::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.weekly-bar-chart__legend li[data-series="repeating"]::before {
+  background: var(--color-series-1);
+}
+
+.weekly-bar-chart__legend li[data-series="shadowing"]::before {
+  background: var(--color-series-2);
+}
+
+.weekly-bar-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px;
+  height: 120px;
+}
+
+.weekly-bar-chart__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex: 1;
+  height: 100%;
+}
+
+.weekly-bar-chart__bar-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+}
+
+.weekly-bar-chart__bar {
+  width: 8px;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+}
+
+.weekly-bar-chart__bar[data-series="repeating"] {
+  background: var(--color-series-1);
+}
+
+.weekly-bar-chart__bar[data-series="shadowing"] {
+  background: var(--color-series-2);
+}
+
+.weekly-bar-chart__day-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   日別練習頻度ヒートマップ（GitHubのコントリビューショングラフのイメージ）
+   参照: docs/spec.md 9.4節
+   ========================================================================== */
+.daily-heatmap-grid {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 3px;
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+}
+
+.daily-heatmap-grid__cell {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--grid-level-0);
+}
+
+.daily-heatmap-grid__cell[data-level="1"] {
+  background: var(--grid-level-1);
+}
+
+.daily-heatmap-grid__cell[data-level="2"] {
+  background: var(--grid-level-2);
+}
+
+.daily-heatmap-grid__cell[data-level="3"] {
+  background: var(--grid-level-3);
+}
+
+.daily-heatmap-grid__cell[data-level="4"] {
   background: var(--grid-level-4);
 }
