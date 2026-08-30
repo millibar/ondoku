@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { playbackReducer } from "../domain/playback/reducer";
+import { playbackReducer, reconcileOrder } from "../domain/playback/reducer";
 import type { PlaybackContext, PlaybackState, PlaybackStatus } from "../domain/playback/types";
 import type { OrderSettings, PracticeMode } from "../types";
 import type { AudioPlayer } from "./audioPlayer";
@@ -21,6 +21,10 @@ export interface UsePlaybackEngineOptions {
 export interface PlaybackEngine {
   status: PlaybackStatus;
   currentContentId: number;
+  // 出題範囲（playlist）内で、現在何番目を再生しているか（1始まり）。
+  // ランダム再生であっても、出題範囲内の通し番号ではなく再生順の位置を表す。
+  // 参照: docs/spec.md 8.2節・8.3節
+  currentIndex: number;
   progress: number;
   play: () => void;
   stop: () => void;
@@ -34,7 +38,9 @@ export function usePlaybackEngine(options: UsePlaybackEngineOptions): PlaybackEn
   const [state, setState] = useState<PlaybackState>({
     status: "stopped",
     currentContentId: options.initialContentId,
-    history: [],
+    playOrder: [...options.playlist],
+    roundPosition: Math.max(0, options.playlist.indexOf(options.initialContentId)),
+    isRandomOrder: false,
   });
   const [progress, setProgress] = useState(0);
 
@@ -49,25 +55,50 @@ export function usePlaybackEngine(options: UsePlaybackEngineOptions): PlaybackEn
     stateRef.current = state;
   });
 
-  // playlistが変化し、現在のcurrentContentIdが新しいplaylistに含まれなくなった場合
-  // （出題範囲の絞り込みで対象外になった等。参照: docs/spec.md 8.0節）、stopped状態で
-  // あれば先頭にリセットする。playing/waiting中は割り込まない
-  // （次の自動遷移＝AUDIO_ENDED/WAIT_ENDEDが最新のplaylistを参照して自然に解決するため）。
+  // playlistまたはisRandom（ランダム再生ON/OFF）が変化した場合の調整。
   // 「propが変わったらstateを調整する」パターンのため、effectではなくレンダー中に
   // 直接setStateする（https://react.dev/learn/you-might-not-need-an-effect）。
   // 呼び出し側がplaylist配列をメモ化せず毎回新しい参照を渡す可能性があるため、
   // 参照比較ではなく内容（要素の並び）で比較する（でないと再レンダーのたびに
   // 変化したと誤判定し、無限ループになる）
   const playlistKey = options.playlist.join(",");
-  const [prevPlaylistKey, setPrevPlaylistKey] = useState(playlistKey);
-  if (playlistKey !== prevPlaylistKey) {
-    setPrevPlaylistKey(playlistKey);
+  const orderKey = `${playlistKey}|${options.orderSettings.isRandom}`;
+  const [prevOrderKey, setPrevOrderKey] = useState(orderKey);
+  if (orderKey !== prevOrderKey) {
+    setPrevOrderKey(orderKey);
     if (
       state.status === "stopped" &&
       options.playlist.length > 0 &&
       !options.playlist.includes(state.currentContentId)
     ) {
-      setState({ status: "stopped", currentContentId: options.playlist[0], history: [] });
+      // playlistが変化し、現在のcurrentContentIdが新しいplaylistに含まれなくなった場合
+      // （出題範囲の絞り込みで対象外になった等。参照: docs/spec.md 8.0節）、stopped状態で
+      // あれば先頭にリセットする。playing/waiting中は割り込まない
+      // （次の自動遷移＝AUDIO_ENDED/WAIT_ENDEDが最新のplaylistを参照して自然に解決するため）
+      setState({
+        status: "stopped",
+        currentContentId: options.playlist[0],
+        playOrder: [...options.playlist],
+        roundPosition: 0,
+        isRandomOrder: false,
+      });
+    } else {
+      // currentContentId自体は引き続き有効なので、playOrder・表示上の位置
+      // （roundPosition）だけをその場で再構築する。次のイベントまで遅延させると、
+      // その次の「次へ／前へ」操作でreconcileOrderによる再構築と1手先への移動が
+      // 同時に起きてしまい、表示上の数字が2以上動いて見える（次へ/前へで必ず1ずつ
+      // 増減するという仕様に反する）ため、切り替え直後に即座に反映する
+      setState((prev) =>
+        reconcileOrder(
+          prev,
+          {
+            playlist: options.playlist,
+            practiceMode: options.practiceMode,
+            orderSettings: options.orderSettings,
+          },
+          Math.random,
+        ),
+      );
     }
   }
 
@@ -219,6 +250,7 @@ export function usePlaybackEngine(options: UsePlaybackEngineOptions): PlaybackEn
   return {
     status: state.status,
     currentContentId: state.currentContentId,
+    currentIndex: state.roundPosition + 1,
     progress,
     play,
     stop,

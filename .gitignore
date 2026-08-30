@@ -23,6 +23,7 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+.playwright-mcp/
 
 # 作業用スクラッチ（確認用ファイル・スクリーンショット等を一時的に置く場所）
 /tmp/

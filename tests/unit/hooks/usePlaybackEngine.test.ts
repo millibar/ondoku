@@ -308,4 +308,79 @@ describe("usePlaybackEngine", () => {
     expect(result.current.currentContentId).toBe(1);
     expect(player.play).toHaveBeenLastCalledWith("blob://content-1");
   });
+
+  it("currentIndexは出題範囲内での再生順の位置（1始まり）を表し、next()/prev()で1ずつ増減する", () => {
+    const player = createFakePlayer();
+    const { result } = renderHook(() =>
+      usePlaybackEngine({
+        playlist: [1, 2, 3],
+        practiceMode: "shadowing",
+        orderSettings: { isRandom: false, isRepeatOne: false },
+        initialContentId: 1,
+        player,
+        getAudioUrl,
+        onPlaybackCompleted: vi.fn(),
+      }),
+    );
+
+    expect(result.current.currentIndex).toBe(1);
+
+    act(() => result.current.next());
+    expect(result.current.currentIndex).toBe(2);
+    expect(result.current.currentContentId).toBe(2);
+
+    act(() => result.current.prev());
+    expect(result.current.currentIndex).toBe(1);
+    expect(result.current.currentContentId).toBe(1);
+  });
+
+  it("ランダム再生をONにした直後、currentIndexが即座に再構築される（次へを押すまで待たない）。その後のnext()も1しか進まない", () => {
+    // Fisher-Yatesシャッフルを決定的にするため、乱数を固定する
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+    try {
+      const player = createFakePlayer();
+      const { result, rerender } = renderHook(
+        (props: UsePlaybackEngineOptions) => usePlaybackEngine(props),
+        {
+          initialProps: {
+            playlist: [1, 2, 3, 4],
+            practiceMode: "shadowing" as const,
+            orderSettings: { isRandom: false, isRepeatOne: false },
+            initialContentId: 1,
+            player,
+            getAudioUrl,
+            onPlaybackCompleted: vi.fn(),
+          },
+        },
+      );
+
+      expect(result.current.currentIndex).toBe(1);
+
+      // ランダム再生スイッチをONにする（この時点ではまだ次へ／前へを押していない）
+      rerender({
+        playlist: [1, 2, 3, 4],
+        practiceMode: "shadowing",
+        orderSettings: { isRandom: true, isRepeatOne: false },
+        initialContentId: 1,
+        player,
+        getAudioUrl,
+        onPlaybackCompleted: vi.fn(),
+      });
+
+      // currentContentIdは変わらないが、出題範囲内での位置（表示上の数字）は
+      // 再構築後のplayOrder内での位置に即座に更新される
+      expect(result.current.currentContentId).toBe(1);
+      const indexAfterSwitch = result.current.currentIndex;
+      expect(indexAfterSwitch).toBeGreaterThanOrEqual(1);
+      expect(indexAfterSwitch).toBeLessThanOrEqual(4);
+
+      // 切り替え後の最初のnext()でも、表示上の数字はちょうど1つだけ動く
+      // （末尾からの場合は先頭へ循環する。順次再生と同じ挙動）
+      act(() => result.current.next());
+      const expectedIndex = indexAfterSwitch >= 4 ? 1 : indexAfterSwitch + 1;
+      expect(result.current.currentIndex).toBe(expectedIndex);
+    } finally {
+      randomSpy.mockRestore();
+    }
+  });
 });

@@ -587,7 +587,11 @@ function PracticeContainer({
   const currentContent = playlist.includes(engine.currentContentId)
     ? (contentsById.get(engine.currentContentId) ?? null)
     : null;
-  const currentIndex = playlist.length === 0 ? 0 : playlist.indexOf(engine.currentContentId) + 1;
+  // 表示上の「n/総数」は、出題範囲内の通し番号ではなく、選択した英文のうち
+  // 何番目を再生しているか（再生順の位置）。ランダム再生時も次へ/前へで必ず1ずつ
+  // 増減するよう、usePlaybackEngineが内部で追跡する位置（roundPosition）をそのまま使う。
+  // 参照: docs/spec.md 8.2節・8.3節
+  const currentIndex = playlist.length === 0 ? 0 : engine.currentIndex;
   const isFavorite = currentContent ? (records.get(currentContent.id)?.isFavorite ?? false) : false;
 
   return (
