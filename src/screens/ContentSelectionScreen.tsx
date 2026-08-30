@@ -31,12 +31,15 @@ export function ContentSelectionScreen({
   onOpenSettings,
 }: ContentSelectionScreenProps) {
   const selected = useMemo(() => new Set(selectedContentIds), [selectedContentIds]);
-  // 折りたたんだカテゴリ（見出しクリックで開閉するUI状態。既定はすべて展開）
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
   const categories = useMemo(
     () => Array.from(new Set(items.map((item) => item.categoryId))).sort(),
     [items],
+  );
+
+  // 折りたたんだカテゴリ（見出しクリックで開閉するUI状態。既定はすべて折りたたみ）
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(
+    () => new Set(categories),
   );
 
   const itemsByCategory = useMemo(() => {

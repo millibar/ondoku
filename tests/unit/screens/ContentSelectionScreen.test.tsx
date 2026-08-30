@@ -46,11 +46,24 @@ function renderScreen(overrides: Partial<Parameters<typeof ContentSelectionScree
   );
 }
 
+// カテゴリは既定で折りたたまれているため、配下の英文カードを検証する前に展開する
+function expandCategory(categoryId: string) {
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(`カテゴリ ${categoryId}`) }));
+}
+
 describe("ContentSelectionScreen", () => {
-  it("カテゴリごとに見出しが表示され、配下に該当英文が表示される", () => {
+  it("カテゴリごとに見出しが表示される（既定は折りたたみ状態）", () => {
     renderScreen();
     expect(screen.getByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /カテゴリ 02/ })).toBeInTheDocument();
+    expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Good morning.")).not.toBeInTheDocument();
+  });
+
+  it("カテゴリ見出しを展開すると、配下に該当英文が表示される", () => {
+    renderScreen();
+    expandCategory("01");
+    expandCategory("02");
     expect(screen.getByText("Hello world.")).toBeInTheDocument();
     expect(screen.getByText("Good morning.")).toBeInTheDocument();
   });
@@ -64,6 +77,7 @@ describe("ContentSelectionScreen", () => {
 
   it("英文カードに通し番号・英文・回数が表示される", () => {
     renderScreen();
+    expandCategory("01");
     expect(screen.getByText("#1")).toBeInTheDocument();
     expect(screen.getByText("Hello world.")).toBeInTheDocument();
     expect(screen.getByText(/リピーティング: 2回/)).toBeInTheDocument();
@@ -72,6 +86,8 @@ describe("ContentSelectionScreen", () => {
 
   it("練習対象チェックボックスはselectedContentIdsを反映する", () => {
     renderScreen({ selectedContentIds: [1, 3] });
+    expandCategory("01");
+    expandCategory("02");
     expect(screen.getByLabelText("#1を練習対象にする")).toBeChecked();
     expect(screen.getByLabelText("#2を練習対象にする")).not.toBeChecked();
     expect(screen.getByLabelText("#3を練習対象にする")).toBeChecked();
@@ -80,6 +96,7 @@ describe("ContentSelectionScreen", () => {
   it("練習対象チェックボックスをクリックするとonToggleContentSelectionが呼ばれる", () => {
     const onToggleContentSelection = vi.fn();
     renderScreen({ onToggleContentSelection });
+    expandCategory("02");
     fireEvent.click(screen.getByLabelText("#2を練習対象にする"));
     expect(onToggleContentSelection).toHaveBeenCalledWith(2);
   });
@@ -108,21 +125,21 @@ describe("ContentSelectionScreen", () => {
     expect(checkbox.indeterminate).toBe(true);
   });
 
-  it("カテゴリ見出しをクリックすると、配下の英文カードの表示・非表示が切り替わる（既定は展開状態）", () => {
+  it("カテゴリ見出しをクリックすると、配下の英文カードの表示・非表示が切り替わる（既定は折りたたみ状態）", () => {
     renderScreen();
     const toggle = screen.getByRole("button", { name: /カテゴリ 01/ });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText("Hello world.")).toBeInTheDocument();
+    // 他のカテゴリには影響しない（折りたたまれたまま）
+    expect(screen.queryByText("Good morning.")).not.toBeInTheDocument();
 
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
-    // 他のカテゴリには影響しない
-    expect(screen.getByText("Good morning.")).toBeInTheDocument();
-
-    fireEvent.click(toggle);
-    expect(toggle).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("Hello world.")).toBeInTheDocument();
   });
 
   it("カテゴリ見出しの開閉クリックはチェックボックスの選択状態に影響しない", () => {
@@ -166,6 +183,7 @@ describe("ContentSelectionScreen", () => {
   it("お気に入りボタンを押すとonToggleFavoriteが呼ばれる", () => {
     const onToggleFavorite = vi.fn();
     renderScreen({ onToggleFavorite });
+    expandCategory("01");
     fireEvent.click(screen.getAllByRole("button", { name: "お気に入りに追加" })[0]);
     expect(onToggleFavorite).toHaveBeenCalledWith(1);
   });
