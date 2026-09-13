@@ -90,10 +90,14 @@ export function incrementPracticeCount(
   });
 }
 
-export function setFavorite(contentId: number, isFavorite: boolean): Promise<void> {
+// 更新後のレコードを返す（呼び出し側がDB再読み込みなしでローカル状態を
+// 更新できるようにするため。incrementPracticeCountと同様のパターン）
+export function setFavorite(contentId: number, isFavorite: boolean): Promise<PracticeRecord> {
   return withDb(async (db) => {
     const existing = (await db.get("practiceRecords", contentId)) ?? emptyPracticeRecord(contentId);
-    await db.put("practiceRecords", { ...existing, isFavorite });
+    const updated: PracticeRecord = { ...existing, isFavorite };
+    await db.put("practiceRecords", updated);
+    return updated;
   });
 }
 

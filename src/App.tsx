@@ -274,8 +274,11 @@ function App() {
 
   async function handleToggleFavorite(id: number) {
     const current = records.get(id);
-    await setFavoriteRecord(id, !(current?.isFavorite ?? false));
-    await reloadFromDb();
+    const updated = await setFavoriteRecord(id, !(current?.isFavorite ?? false));
+    // お気に入りの更新だけであれば、全件（560件）をDBから読み直す
+    // reloadFromDb()は不要かつ重く、練習画面のちらつきの原因になっていた。
+    // 更新後のレコード1件だけをローカルのrecordsに反映する
+    setRecords((prev) => new Map(prev).set(id, updated));
   }
 
   function handleToggleContentSelection(id: number) {
@@ -513,7 +516,13 @@ function PracticeContainer({
     }
   }, []);
 
-  // 出題範囲の音声Blobを取得し、Object URLを準備する
+  // 出題範囲の音声Blobを取得し、Object URLを準備する。
+  // playlistは呼び出し側（App）のuseMemoがrecords（お気に入り等）が変わるたびに
+  // 新しい配列参照を返すため、参照（[playlist]）を依存配列にすると出題範囲の
+  // 中身が同じでも毎回この副作用が再実行され、audioReady=falseで練習画面が一瞬
+  // 「音声を準備中...」に差し替わる（お気に入りボタン押下時のちらつきの原因）。
+  // usePlaybackEngineと同様、内容（並び）から作ったキーで比較する
+  const playlistKey = playlist.join(",");
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -532,7 +541,8 @@ function PracticeContainer({
     return () => {
       cancelled = true;
     };
-  }, [playlist]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playlistKey]);
 
   // アンマウント時にObject URLを解放する
   useEffect(() => {

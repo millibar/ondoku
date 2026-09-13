@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import App from "../../src/App";
-import { getAllContents } from "../../src/data/db";
+import { getAllContents, getAudioBlob, setFavorite } from "../../src/data/db";
 import { saveDriveSettings } from "../../src/data/localStorage";
 import { syncFromDrive } from "../../src/domain/sync";
 
@@ -44,6 +44,8 @@ beforeEach(() => {
   localStorage.clear();
   requestTokenMock.mockReset();
   vi.mocked(getAllContents).mockReset().mockResolvedValue([]);
+  vi.mocked(getAudioBlob).mockClear();
+  vi.mocked(setFavorite).mockReset();
   vi.mocked(syncFromDrive)
     .mockReset()
     .mockResolvedValue({ contentCount: 0, audioFailures: [], tsvParseErrors: [] });
@@ -75,6 +77,35 @@ describe("App", () => {
 
     expect(await screen.findByText("Hello world.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "練習" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("お気に入りボタンをクリックしても英文一覧の再取得は発生しない（画面のちらつき防止の回帰テスト）", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    vi.mocked(setFavorite).mockResolvedValue({
+      contentId: 1,
+      repeatingCount: 0,
+      shadowingCount: 0,
+      lastPracticedAt: "",
+      isFavorite: true,
+    });
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+    await screen.findByText("Hello world.");
+    const getAllContentsCallCountBefore = vi.mocked(getAllContents).mock.calls.length;
+    const getAudioBlobCallCountBefore = vi.mocked(getAudioBlob).mock.calls.length;
+
+    fireEvent.click(screen.getByRole("button", { name: "お気に入りに追加" }));
+
+    // お気に入りの更新はローカルのrecords状態を直接更新するだけで、
+    // 全件（560件）をDBから読み直すreloadFromDb()は呼ばれない
+    expect(await screen.findByRole("button", { name: "お気に入りから解除" })).toBeInTheDocument();
+    expect(vi.mocked(getAllContents).mock.calls.length).toBe(getAllContentsCallCountBefore);
+    // 出題範囲（playlist）の中身は変わっていないため、音声Blobの取得
+    // （＝「音声を準備中...」への一瞬の差し替わり）も再発生しない
+    expect(vi.mocked(getAudioBlob).mock.calls.length).toBe(getAudioBlobCallCountBefore);
+    expect(screen.queryByText("音声を準備中...")).not.toBeInTheDocument();
   });
 
   it("サイレント再認証に失敗（オフライン等）しても、キャッシュ済みデータがあればアプリ本体が表示される（仕様書11章）", async () => {

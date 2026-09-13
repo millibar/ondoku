@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BookmarkSVG } from "../components/icons/Icons";
 
 // 英文選択画面。参照: docs/spec.md 4.2節
 
@@ -147,9 +148,10 @@ export function ContentSelectionScreen({
                         type="button"
                         className="button--favorite"
                         aria-pressed={item.isFavorite}
+                        aria-label={item.isFavorite ? "お気に入りから解除" : "お気に入りに追加"}
                         onClick={() => onToggleFavorite(item.id)}
                       >
-                        {item.isFavorite ? "お気に入りから解除" : "お気に入りに追加"}
+                        <BookmarkSVG />
                       </button>
                     </div>
                   </li>

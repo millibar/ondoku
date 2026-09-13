@@ -9,5 +9,6 @@
 - `BottomTabNav.tsx`（下部タブナビゲーション。練習中・待機中は英文選択／練習履歴タブをdisabled）
 - `WeeklyBarChart.tsx`（直近7日間の練習回数のグループ化棒グラフ）
 - `DailyHeatmapGrid.tsx`（日別練習頻度ヒートマップ）
+- `icons/Icons.tsx`（UIアイコン用SVGコンポーネント集。`fill="currentColor"`でCSSから色を制御する）
 
 参照: [docs/implementation-plan.md](../../docs/implementation-plan.md) WP3・WP9・WP10、[docs/test-plan.md](../../docs/test-plan.md) 5章

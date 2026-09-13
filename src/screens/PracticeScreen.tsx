@@ -1,4 +1,5 @@
 import { ContentText } from "../components/ContentText";
+import { BookmarkSVG, RepeatOneSVG, ShuffleSVG } from "../components/icons/Icons";
 import { PlaybackControls } from "../components/PlaybackControls";
 import { ProgressBar } from "../components/ProgressBar";
 import type { PlaybackStatus } from "../domain/playback";
@@ -84,28 +85,32 @@ export function PracticeScreen({
           {currentIndex}/{totalCount}
         </span>
 
-        <label htmlFor="isRandom">
+        <label htmlFor="isRandom" className="icon-toggle">
           <input
             id="isRandom"
             type="checkbox"
+            className="icon-toggle__checkbox"
             checked={orderSettings.isRandom}
             onChange={(event) =>
               onChangeOrderSettings({ ...orderSettings, isRandom: event.target.checked })
             }
           />
-          ランダム再生
+          <ShuffleSVG className="icon-toggle__icon" />
+          <span className="visually-hidden">ランダム再生</span>
         </label>
 
-        <label htmlFor="isRepeatOne">
+        <label htmlFor="isRepeatOne" className="icon-toggle">
           <input
             id="isRepeatOne"
             type="checkbox"
+            className="icon-toggle__checkbox"
             checked={orderSettings.isRepeatOne}
             onChange={(event) =>
               onChangeOrderSettings({ ...orderSettings, isRepeatOne: event.target.checked })
             }
           />
-          1リピート再生
+          <RepeatOneSVG className="icon-toggle__icon" />
+          <span className="visually-hidden">1リピート再生</span>
         </label>
 
         <label htmlFor="favoritesOnly">
@@ -144,10 +149,11 @@ export function PracticeScreen({
           type="button"
           className="button--favorite"
           aria-pressed={isFavorite}
+          aria-label={isFavorite ? "お気に入りから解除" : "お気に入りに追加"}
           disabled={content === null}
           onClick={onToggleFavorite}
         >
-          {isFavorite ? "お気に入りから解除" : "お気に入りに追加"}
+          <BookmarkSVG />
         </button>
       </div>
 
