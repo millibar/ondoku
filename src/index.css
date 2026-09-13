@@ -628,8 +628,11 @@ select {
   cursor: pointer;
 }
 
+/* ホバー時にcolorを変えるとON時の色（--color-primary）と紛らわしくchecked状態を
+   覆い隠してしまう（クリック直後はカーソルがアイコン上に残るため、実際は
+   OFFになっていてもホバー色でONに見えてしまう）ため、opacityのみ変化させる */
 .icon-toggle:hover .icon-toggle__icon {
-  color: var(--color-primary);
+  opacity: 0.7;
 }
 
 .icon-toggle__icon {
