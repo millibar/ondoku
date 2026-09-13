@@ -63,7 +63,7 @@ describe("App", () => {
 
     render(<App />);
 
-    expect(await screen.findByLabelText("Google DriveのフォルダID")).toBeInTheDocument();
+    expect(await screen.findByLabelText("Google DriveのフォルダIDまたはURL")).toBeInTheDocument();
   });
 
   it("ログイン済み・Drive設定済みの場合、アプリ本体（練習タブ）が表示される", async () => {
@@ -94,7 +94,7 @@ describe("App", () => {
 
     render(<App />);
 
-    fireEvent.change(await screen.findByLabelText("Google DriveのフォルダID"), {
+    fireEvent.change(await screen.findByLabelText("Google DriveのフォルダIDまたはURL"), {
       target: { value: "folder-123" },
     });
     fireEvent.click(screen.getByRole("button", { name: "次へ" }));
@@ -190,7 +190,7 @@ describe("App", () => {
     await screen.findByRole("heading", { name: /カテゴリ 01/ });
 
     fireEvent.click(screen.getByRole("button", { name: "設定" }));
-    expect(await screen.findByLabelText("Google DriveのフォルダID")).toBeInTheDocument();
+    expect(await screen.findByLabelText("Google DriveのフォルダIDまたはURL")).toBeInTheDocument();
     // 設定画面表示中はタブナビゲーションを隠す
     expect(screen.queryByRole("button", { name: "練習" })).not.toBeInTheDocument();
 
