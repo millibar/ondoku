@@ -17,7 +17,7 @@ describe("SetupScreen", () => {
 
   it("フォルダIDを入力すると次へボタンが有効になる", () => {
     render(<SetupScreen onComplete={vi.fn()} />);
-    fireEvent.change(screen.getByLabelText("Google DriveのフォルダID"), {
+    fireEvent.change(screen.getByLabelText("Google DriveのフォルダIDまたはURL"), {
       target: { value: "folder-123" },
     });
     expect(screen.getByRole("button", { name: "次へ" })).toBeEnabled();
@@ -27,12 +27,25 @@ describe("SetupScreen", () => {
     const onComplete = vi.fn();
     render(<SetupScreen onComplete={onComplete} />);
 
-    fireEvent.change(screen.getByLabelText("Google DriveのフォルダID"), {
+    fireEvent.change(screen.getByLabelText("Google DriveのフォルダIDまたはURL"), {
       target: { value: "folder-123" },
     });
     fireEvent.click(screen.getByRole("button", { name: "次へ" }));
 
     expect(getDriveSettings()).toEqual({ rootFolderId: "folder-123" });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it("フォルダURLを入力した場合はIDを抽出してlocalStorageに保存する", () => {
+    const onComplete = vi.fn();
+    render(<SetupScreen onComplete={onComplete} />);
+
+    fireEvent.change(screen.getByLabelText("Google DriveのフォルダIDまたはURL"), {
+      target: { value: "https://drive.google.com/drive/folders/1cjGHiZ-vRoPE9yNQOkIBs7ygY8d8JQbi" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+
+    expect(getDriveSettings()).toEqual({ rootFolderId: "1cjGHiZ-vRoPE9yNQOkIBs7ygY8d8JQbi" });
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 });

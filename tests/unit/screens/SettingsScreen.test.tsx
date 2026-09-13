@@ -21,17 +21,27 @@ function renderScreen(overrides: Partial<Parameters<typeof SettingsScreen>[0]> =
 describe("SettingsScreen", () => {
   it("現在のフォルダIDが初期値として表示される", () => {
     renderScreen();
-    expect(screen.getByLabelText("Google DriveのフォルダID")).toHaveValue("folder-abc");
+    expect(screen.getByLabelText("Google DriveのフォルダIDまたはURL")).toHaveValue("folder-abc");
   });
 
   it("フォルダIDを変更して保存すると、onSaveが新しい値で呼ばれる", () => {
     const onSave = vi.fn();
     renderScreen({ onSave });
-    fireEvent.change(screen.getByLabelText("Google DriveのフォルダID"), {
+    fireEvent.change(screen.getByLabelText("Google DriveのフォルダIDまたはURL"), {
       target: { value: "folder-xyz" },
     });
     fireEvent.click(screen.getByRole("button", { name: "保存" }));
     expect(onSave).toHaveBeenCalledWith("folder-xyz");
+  });
+
+  it("フォルダURLを入力して保存すると、抽出したIDでonSaveが呼ばれる", () => {
+    const onSave = vi.fn();
+    renderScreen({ onSave });
+    fireEvent.change(screen.getByLabelText("Google DriveのフォルダIDまたはURL"), {
+      target: { value: "https://drive.google.com/drive/folders/1cjGHiZ-vRoPE9yNQOkIBs7ygY8d8JQbi" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+    expect(onSave).toHaveBeenCalledWith("1cjGHiZ-vRoPE9yNQOkIBs7ygY8d8JQbi");
   });
 
   it("同期ボタンでonSyncが呼ばれる", () => {

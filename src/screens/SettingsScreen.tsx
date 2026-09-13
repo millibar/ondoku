@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { extractDriveFolderId } from "../domain/driveFolderId";
 
 // 設定画面（Drive接続設定・同期・ログアウト）。参照: docs/spec.md 4.2.1節
 // 英文選択画面から開くサブ画面（タブナビゲーションには含めない）
@@ -29,7 +30,7 @@ export function SettingsScreen({
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    onSave(folderId.trim());
+    onSave(extractDriveFolderId(folderId));
   }
 
   return (
@@ -42,7 +43,7 @@ export function SettingsScreen({
       </header>
 
       <form className="settings-screen__form" onSubmit={handleSubmit}>
-        <label htmlFor="settingsRootFolderId">Google DriveのフォルダID</label>
+        <label htmlFor="settingsRootFolderId">Google DriveのフォルダIDまたはURL</label>
         <input
           id="settingsRootFolderId"
           type="text"
