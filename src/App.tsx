@@ -274,8 +274,11 @@ function App() {
 
   async function handleToggleFavorite(id: number) {
     const current = records.get(id);
-    await setFavoriteRecord(id, !(current?.isFavorite ?? false));
-    await reloadFromDb();
+    const updated = await setFavoriteRecord(id, !(current?.isFavorite ?? false));
+    // お気に入りの更新だけであれば、全件（560件）をDBから読み直す
+    // reloadFromDb()は不要かつ重く、練習画面のちらつきの原因になっていた。
+    // 更新後のレコード1件だけをローカルのrecordsに反映する
+    setRecords((prev) => new Map(prev).set(id, updated));
   }
 
   function handleToggleContentSelection(id: number) {
