@@ -168,6 +168,7 @@ ul {
 
 .bottom-tab-nav__button {
   flex: 1;
+  min-height: 56px;
   border: none;
   border-radius: 0;
   background: transparent;
