@@ -259,10 +259,15 @@ button[aria-pressed="true"] {
   height: var(--icon-size);
 }
 
+/* ホバー時は背景のみ変化させ、colorは維持する。
+   共通の button:hover スタイル（indigoの文字色）の詳細度がaria-pressedの
+   配色より高く、そのままだとホバー中は常にindigoになってaria-pressed状態
+   （ON=琥珀色/OFF=グレー）を覆い隠してしまう（クリック直後はカーソルが
+   ボタン上に残るため、実際はOFFになっていてもホバー色でONに見えてしまう）
+   ため、ホバー時のcolorをaria-pressedごとに明示的に指定し直す */
 .button--favorite:hover:not(:disabled) {
   background: var(--color-favorite-bg);
-  color: var(--color-favorite);
-  border-color: transparent;
+  color: var(--color-text-muted);
 }
 
 /* お気に入り登録中の配色（選択中トグルと区別するため琥珀色にする）。
@@ -270,6 +275,10 @@ button[aria-pressed="true"] {
 .button--favorite[aria-pressed="true"] {
   background: transparent;
   border-color: transparent;
+  color: var(--color-favorite);
+}
+
+.button--favorite[aria-pressed="true"]:hover:not(:disabled) {
   color: var(--color-favorite);
 }
 
