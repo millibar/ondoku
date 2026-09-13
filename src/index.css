@@ -27,9 +27,9 @@
   --grid-level-3: #818cf8;
   --grid-level-4: #4338ca;
 
-  /* 頻度グリッド（FrequencyGrid）・日別ヒートマップ（DailyHeatmapGrid）で共通のマスサイズ。
-     列数・マスサイズを揃えることで、2つのグリッドが同じ大きさで表示される。参照: docs/spec.md 9.3節・9.4節 */
-  --grid-cell-size: 8px;
+  /* 頻度グリッド（FrequencyGrid）・日別ヒートマップ（DailyHeatmapGrid）で共通のマス間隔。
+     マスの大きさ自体は固定値ではなく表示領域の横幅から計算するが、列数（28列）と
+     この間隔を揃えることで、2つのグリッドが同じ大きさで表示される。参照: docs/spec.md 9.3節・9.4節 */
   --grid-cell-gap: 3px;
 
   /* 練習履歴画面の棒グラフ用カテゴリカル配色（datavizスキルの検証済みペア。
@@ -766,12 +766,10 @@ select {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  overflow-x: auto;
 }
 
 .frequency-grid__cell {
-  width: var(--grid-cell-size);
-  height: var(--grid-cell-size);
+  aspect-ratio: 1 / 1;
   border-radius: 2px;
   background: var(--grid-level-0);
 }
@@ -915,20 +913,19 @@ select {
 .daily-heatmap-grid {
   display: grid;
   grid-auto-flow: column;
-  /* grid-auto-columns を明示しないと、コンテナ幅に余白がある場合に暗黙列（auto）が
-     引き伸ばされてマス間の間隔が広がってしまう（frequency-gridと大きさが揃わなくなる） */
-  grid-auto-columns: var(--grid-cell-size);
+  /* grid-auto-columns を明示しないと、コンテナ幅に余白がある場合にブラウザが暗黙列（既定値auto）を
+     引き伸ばしてマス間の間隔が広がってしまう。1frにすることで、マスの大きさ自体は表示領域の
+     横幅に応じて可変にしつつ、frequency-gridと同じ28列で幅を揃える */
+  grid-auto-columns: 1fr;
   gap: var(--grid-cell-gap);
   padding: 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  overflow-x: auto;
 }
 
 .daily-heatmap-grid__cell {
-  width: var(--grid-cell-size);
-  height: var(--grid-cell-size);
+  aspect-ratio: 1 / 1;
   border-radius: 2px;
   background: var(--grid-level-0);
 }
