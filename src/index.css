@@ -43,6 +43,9 @@
 
   --shadow-sm: 0 1px 2px rgba(31, 34, 48, 0.06);
   --shadow-md: 0 8px 24px rgba(31, 34, 48, 0.08);
+
+  /* SVGアイコンの標準サイズ（トグル・お気に入りボタン等） */
+  --icon-size: 22px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -215,6 +218,22 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
+/* スクリーンリーダー向けテキスト・チェックボックスを視覚的にのみ隠す
+   （フォーカス移動・クリック領域・読み上げは維持する）。アイコンのみ表示の
+   トグル・ボタンで使用する */
+.visually-hidden,
+.icon-toggle__checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* 選択中トグル（練習モード切り替えなど）。参照: docs/spec.md 4章 */
 button[aria-pressed="true"] {
   background: var(--color-primary);
@@ -222,10 +241,35 @@ button[aria-pressed="true"] {
   color: #fff;
 }
 
-/* お気に入りボタン専用の配色（選択中トグルと区別するため琥珀色にする） */
-.button--favorite[aria-pressed="true"] {
+/* お気に入り追加／解除ボタン（アイコンのみ表示）。参照: docs/spec.md 4.1節・4.2節 */
+.button--favorite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.button--favorite svg {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.button--favorite:hover:not(:disabled) {
   background: var(--color-favorite-bg);
-  border-color: var(--color-favorite);
+  color: var(--color-favorite);
+  border-color: transparent;
+}
+
+/* お気に入り登録中の配色（選択中トグルと区別するため琥珀色にする）。
+   共通の button[aria-pressed] スタイル（indigo塗りつぶし）を打ち消す */
+.button--favorite[aria-pressed="true"] {
+  background: transparent;
+  border-color: transparent;
   color: var(--color-favorite);
 }
 
@@ -575,6 +619,34 @@ select {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-text-muted);
+}
+
+/* ランダム再生・1リピート再生トグル（アイコンのみ表示）。
+   DOM上はcheckboxを維持し、見た目だけ visually-hidden クラスで隠す。
+   SVGアイコンの色は隣接するcheckboxのchecked疑似クラスで切り替える */
+.icon-toggle {
+  cursor: pointer;
+}
+
+.icon-toggle:hover .icon-toggle__icon {
+  color: var(--color-primary);
+}
+
+.icon-toggle__icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  color: var(--color-text-muted);
+  transition: color 0.15s ease;
+}
+
+.icon-toggle__checkbox:checked + .icon-toggle__icon {
+  color: var(--color-primary);
+}
+
+.icon-toggle__checkbox:focus-visible + .icon-toggle__icon {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* 3. カテゴリ */
