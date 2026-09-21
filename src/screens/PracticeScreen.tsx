@@ -56,28 +56,35 @@ export function PracticeScreen({
 }: PracticeScreenProps) {
   return (
     <div className="practice-screen">
+      {/* 1. 練習モード（Repeating／Shadowing）切り替え。見出しを兼ねるラジオボタンで、
+          左上に連続学習日数を置く。ラジオボタン自体は視覚的に隠し、選択中のlabelの下線で表す */}
       <header>
-        <h1>練習</h1>
-        <p className="practice-screen__streak">連続学習日数: {streak}日</p>
+        <p className="practice-screen__streak">{streak}-Day Streak</p>
+        <h1>
+          <span role="radiogroup" aria-label="練習モード" className="practice-screen__mode-toggle">
+            <label className="practice-screen__mode-option">
+              <input
+                type="radio"
+                name="practiceMode"
+                className="visually-hidden"
+                checked={practiceMode === "repeating"}
+                onChange={() => onChangePracticeMode("repeating")}
+              />
+              Repeating
+            </label>
+            <label className="practice-screen__mode-option">
+              <input
+                type="radio"
+                name="practiceMode"
+                className="visually-hidden"
+                checked={practiceMode === "shadowing"}
+                onChange={() => onChangePracticeMode("shadowing")}
+              />
+              Shadowing
+            </label>
+          </span>
+        </h1>
       </header>
-
-      {/* 1. リピーティング／シャドーイング切り替え */}
-      <div role="group" aria-label="練習モード" className="practice-screen__mode-toggle">
-        <button
-          type="button"
-          aria-pressed={practiceMode === "repeating"}
-          onClick={() => onChangePracticeMode("repeating")}
-        >
-          リピーティング
-        </button>
-        <button
-          type="button"
-          aria-pressed={practiceMode === "shadowing"}
-          onClick={() => onChangePracticeMode("shadowing")}
-        >
-          シャドーイング
-        </button>
-      </div>
 
       {/* 2. 現在の番号/総数・ランダム再生・1リピート再生・お気に入りのみ表示 */}
       <div className="practice-screen__settings-row">
