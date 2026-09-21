@@ -51,13 +51,22 @@ function expandCategory(categoryId: string) {
   fireEvent.click(screen.getByRole("button", { name: new RegExp(`カテゴリ ${categoryId}`) }));
 }
 
+// 開閉アニメーションのため配下の英文カードは折りたたみ中もDOMに残り続け、
+// data-expanded属性とinertで開閉状態を表す
+function getCollapseRegion(categoryId: string) {
+  const toggle = screen.getByRole("button", { name: new RegExp(`カテゴリ ${categoryId}`) });
+  return toggle.closest("section")?.querySelector(".content-selection-screen__collapse");
+}
+
 describe("ContentSelectionScreen", () => {
   it("カテゴリごとに見出しが表示される（既定は折りたたみ状態）", () => {
     renderScreen();
     expect(screen.getByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /カテゴリ 02/ })).toBeInTheDocument();
-    expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
-    expect(screen.queryByText("Good morning.")).not.toBeInTheDocument();
+    expect(getCollapseRegion("01")).toHaveAttribute("data-expanded", "false");
+    expect(getCollapseRegion("01")).toHaveAttribute("inert");
+    expect(getCollapseRegion("02")).toHaveAttribute("data-expanded", "false");
+    expect(getCollapseRegion("02")).toHaveAttribute("inert");
   });
 
   it("カテゴリはカテゴリ名の文字列ソートではなく、英文の通し番号順（itemsの並び順）に表示される", () => {
@@ -161,21 +170,26 @@ describe("ContentSelectionScreen", () => {
     expect(checkbox.indeterminate).toBe(true);
   });
 
-  it("カテゴリ見出しをクリックすると、配下の英文カードの表示・非表示が切り替わる（既定は折りたたみ状態）", () => {
+  it("カテゴリ見出しをクリックすると、配下の英文カードの開閉状態が切り替わる（既定は折りたたみ状態）", () => {
     renderScreen();
     const toggle = screen.getByRole("button", { name: /カテゴリ 01/ });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
+    expect(getCollapseRegion("01")).toHaveAttribute("data-expanded", "false");
+    expect(getCollapseRegion("01")).toHaveAttribute("inert");
 
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(getCollapseRegion("01")).toHaveAttribute("data-expanded", "true");
+    expect(getCollapseRegion("01")).not.toHaveAttribute("inert");
     expect(screen.getByText("Hello world.")).toBeInTheDocument();
     // 他のカテゴリには影響しない（折りたたまれたまま）
-    expect(screen.queryByText("Good morning.")).not.toBeInTheDocument();
+    expect(getCollapseRegion("02")).toHaveAttribute("data-expanded", "false");
+    expect(getCollapseRegion("02")).toHaveAttribute("inert");
 
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
+    expect(getCollapseRegion("01")).toHaveAttribute("data-expanded", "false");
+    expect(getCollapseRegion("01")).toHaveAttribute("inert");
   });
 
   it("カテゴリ見出しの開閉クリックはチェックボックスの選択状態に影響しない", () => {

@@ -125,7 +125,14 @@ export function ContentSelectionScreen({
               </h2>
             </div>
 
-            {isExpanded && (
+            {/* 開閉アニメーションのため、折りたたみ中もDOMからは外さずinertで
+                操作・読み上げ対象から除外する（CSS側はgrid-template-rowsで
+                高さを0⇔1frに遷移させる） */}
+            <div
+              className="content-selection-screen__collapse"
+              data-expanded={isExpanded}
+              inert={!isExpanded}
+            >
               <ul className="content-selection-screen__list">
                 {categoryItems.map((item) => (
                   <li key={item.id}>
@@ -157,7 +164,7 @@ export function ContentSelectionScreen({
                   </li>
                 ))}
               </ul>
-            )}
+            </div>
           </section>
         );
       })}
