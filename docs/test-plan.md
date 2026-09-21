@@ -144,13 +144,15 @@
 - `FrequencyGrid`: 560件分のデータを渡した際、各マスの色区分がデータ通りに反映される
 - `PlaybackControls`: ボタンのラベルが記号（＜ ▶ ■ ＞）で表示され、アクセシブルな名前が英語（Previous／Play／Stop／Next）で付く（▶には異体字選択子U+FE0Eが付く）。各ボタン押下で対応するコールバックが呼ばれる。状態（`playing`/`stopped`等）に応じてボタンの活性・非活性が正しく切り替わる。`disabled=true`のとき全ボタンが無効になる
 - `ContentText`: 英文・日本語訳のON/OFFがそれぞれ独立して表示・非表示を切り替えられる
-- `ContentSelectionScreen`（旧`ContentListScreen`。参照: docs/spec.md 4.2節）: カテゴリごとに見出し・英文カードが表示される。練習対象チェックボックスが`selectedContentIds`を反映し、操作でコールバックが呼ばれる。カテゴリ見出しの全選択／全解除チェックボックス（全選択済み／未選択／一部選択済み＝indeterminateの3状態）が正しく表示・動作する。カテゴリ見出しクリックで配下の英文カードの表示・非表示が切り替わる（開閉トグルはチェックボックス操作に影響しない）。固定表示中のカテゴリ見出しを押して閉じたときのみ、そのカテゴリの位置へスクロール位置を合わせる（固定されていない見出しを閉じるとき・開くときはスクロールしない。jsdomにはレイアウトが無いため、要素の位置とscrollIntoViewを差し替えて検証する）。カテゴリ見出しに「選択中/総数」が表示される。ヘッダー内の全選択／全解除チェックボックスと「選択中/総数」表示が、見出し「英文選択」・設定ボタンと同じ`header`内にまとまって表示され、正しく動作する。お気に入りボタンでトグルできる
+- `ContentSelectionScreen`（旧`ContentListScreen`。参照: docs/spec.md 4.2節）: カテゴリごとに見出し・英文カードが表示される。練習対象チェックボックスが`selectedContentIds`を反映し、操作でコールバックが呼ばれる。カテゴリ見出しの全選択／全解除チェックボックス（全選択済み／未選択／一部選択済み＝indeterminateの3状態）が正しく表示・動作する。カテゴリ見出しクリックで配下の英文カードの表示・非表示が切り替わる（開閉トグルはチェックボックス操作に影響しない）。固定表示中のカテゴリ見出しを押して閉じたときのみ、そのカテゴリの位置へスクロール位置を合わせる（固定されていない見出しを閉じるとき・開くときはスクロールしない。jsdomにはレイアウトが無いため、要素の位置とscrollIntoViewを差し替えて検証する）。カテゴリ見出しに「選択中/総数」が表示される。ヘッダー内の全選択／全解除チェックボックスと「選択中/総数」表示が、見出し「Sentences」・設定ボタンと同じ`header`内にまとまって表示され、正しく動作する。見出しは「Sentences」。英文カードの回数は「Repeating: n / Shadowing: m」（「回」は省略）で表示される。お気に入りボタンでトグルできる
 - `SetupScreen`: フォルダID未入力時は次に進めない、入力後は`localStorage`に保存され次画面に遷移する
 - `SettingsScreen`（参照: docs/spec.md 4.2.1節）: フォルダID保存・同期ボタン・`syncError`表示・キャッシュを更新ボタン・閉じるボタンが動作する
 - `PracticeScreen`（参照: docs/spec.md 4.1節、8.0節）: モード切り替えUI（練習モード／ランダム再生スイッチ／1リピート再生スイッチ）の操作で内部状態が切り替わる。練習モードはヘッダー内の見出し（h1）を兼ねるラジオボタン（Repeating／Shadowing）で、選択中のものだけがcheckedになり、操作でonChangePracticeModeが呼ばれる（「練習」という見出しは無い）。通し番号・カテゴリ・「現在のインデックス/総数」が表示される。連続学習日数が「n-Day Streak」の英語表記でヘッダー内に表示され、見出し（モード切り替え）より前（左上）に置かれる。お気に入りのみ表示チェックボックスの操作で`onChangeFavoritesOnly`が呼ばれる。`content=null`（出題対象が無い）の場合、案内メッセージが表示され、再生系ボタンがdisabledになる一方、お気に入りのみ表示チェックボックスは操作可能なまま残る
-- `WeeklyBarChart`（参照: docs/spec.md 9.4節）: 渡した日数分の棒が描画される。各棒の高さ（相対値）がリピーティング／シャドーイングの回数を反映する
+- `WeeklyBarChart`（参照: docs/spec.md 9.4節）: 渡した日数分の棒が描画される。各棒の高さ（相対値）がリピーティング／シャドーイングの回数を反映する。凡例は「Repeating」「Shadowing」、曜日はアルファベット3文字（Sun〜Sat）で表示される
 - `DailyHeatmapGrid`（参照: docs/spec.md 9.4節）: 渡されたセルの数だけマスを描画する。各マスの色区分（`data-level`）が日別の合計練習回数通りに反映される
-- `PracticeHistoryScreen`（参照: docs/spec.md 4.3節）: 連続学習日数・7日間棒グラフ・196日ヒートマップ・全英文グリッドがすべて表示される
+- `PracticeHistoryScreen`（参照: docs/spec.md 4.3節）: 見出し「History」と、連続学習日数（「n-Day Streak」。見出しより前＝左上）・7日間棒グラフ・196日ヒートマップ・全英文グリッドがすべて表示される。セクション見出しは「Last 7 Days」「Last 28 Weeks」「All Sentences」
+- `StreakBadge`（参照: docs/spec.md 4.0節）: 連続学習日数が「n-Day Streak」の英語表記で表示される（0日の場合も含む）
+- `BottomTabNav`（参照: docs/spec.md 4.0節）: 3つのタブ（Practice／Sentences／History）が表示され、activeなタブがaria-pressed=trueになる。disabled時はSentences・Historyのみ無効になる
 
 ## 6. E2Eテストシナリオ（Playwright）
 

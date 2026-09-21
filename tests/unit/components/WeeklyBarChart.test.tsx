@@ -42,10 +42,19 @@ describe("WeeklyBarChart", () => {
     expect(bar).toHaveStyle({ height: "100%" });
   });
 
-  it("凡例（リピーティング・シャドーイング）が表示される", () => {
+  it("凡例（Repeating・Shadowing）が英語表記で表示される", () => {
     render(<WeeklyBarChart series={SERIES} />);
-    expect(screen.getByText("リピーティング")).toBeInTheDocument();
-    expect(screen.getByText("シャドーイング")).toBeInTheDocument();
+    expect(screen.getByText("Repeating")).toBeInTheDocument();
+    expect(screen.getByText("Shadowing")).toBeInTheDocument();
+  });
+
+  it("曜日はアルファベット3文字（Sun〜Sat）で表示される", () => {
+    // SERIESは2026-08-17（月）から7日分
+    const { container } = render(<WeeklyBarChart series={SERIES} />);
+    const labels = Array.from(container.querySelectorAll(".weekly-bar-chart__day-label")).map(
+      (el) => el.textContent,
+    );
+    expect(labels).toEqual(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
   });
 
   it("全日0件の場合でもクラッシュせず高さ0%の棒になる", () => {

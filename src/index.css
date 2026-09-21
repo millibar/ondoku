@@ -738,17 +738,23 @@ select {
    練習画面
    参照: docs/spec.md 4.1節
    ========================================================================== */
-/* ヘッダーは2段構成。上段=左上に連続学習日数（「n-Day Streak」）、下段=中央に
-   モード切り替え（見出しを兼ねる）。1行に並べると、狭い画面では見出しの両脇に
-   連続学習日数を置く幅が足りないため */
-.practice-screen > header {
+/* 練習画面・練習履歴画面のヘッダーは2段構成。上段=左上に連続学習日数（「n-Day Streak」）、
+   下段=中央に見出し（練習画面はモード切り替えを兼ねる）。1行に並べると、狭い画面では
+   見出しの両脇に連続学習日数を置く幅が足りないため */
+.practice-screen > header,
+.practice-history-screen > header {
   flex-direction: column;
   align-items: stretch;
   gap: 4px;
 }
 
-/* 連続学習日数（バッジ表示）。上段の左端に寄せる */
-.practice-screen__streak {
+.practice-screen > header h1,
+.practice-history-screen > header h1 {
+  text-align: center;
+}
+
+/* 連続学習日数（バッジ表示。StreakBadge）。上段の左端に寄せる */
+.streak-badge {
   align-self: flex-start;
   margin: 0;
   font-size: 0.75rem;
@@ -763,10 +769,6 @@ select {
    ラジオボタン自体は .visually-hidden で視覚的にのみ隠し、選択中のlabelの下線で
    どちらが選ばれているかを表す。下線の幅は未選択時も transparent で確保し、
    切り替えでレイアウトが動かないようにする */
-.practice-screen > header h1 {
-  text-align: center;
-}
-
 .practice-screen__mode-toggle {
   display: flex;
   justify-content: center;
@@ -1061,16 +1063,6 @@ select {
    練習履歴画面
    参照: docs/spec.md 4.3節、9.4節
    ========================================================================== */
-.practice-history-screen__streak {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-  padding: 4px 12px;
-  border-radius: 999px;
-}
-
 .practice-history-screen section {
   display: flex;
   flex-direction: column;

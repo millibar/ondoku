@@ -73,7 +73,7 @@ describe("PracticeScreen", () => {
     expect(within(group).getByRole("radio", { name: "Repeating" })).toBeInTheDocument();
     expect(within(group).getByRole("radio", { name: "Shadowing" })).toBeInTheDocument();
     // 見出しを兼ねるため、「練習」という見出し文言は無い
-    expect(screen.queryByRole("heading", { name: "練習" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Practice" })).not.toBeInTheDocument();
   });
 
   it.each([

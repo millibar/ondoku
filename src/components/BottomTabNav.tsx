@@ -10,9 +10,9 @@ export interface BottomTabNavProps {
 }
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: "practice", label: "練習" },
-  { id: "selection", label: "英文選択" },
-  { id: "history", label: "練習履歴" },
+  { id: "practice", label: "Practice" },
+  { id: "selection", label: "Sentences" },
+  { id: "history", label: "History" },
 ];
 
 export function BottomTabNav({ active, disabled, onSelect }: BottomTabNavProps) {

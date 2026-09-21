@@ -1,5 +1,6 @@
 import { DailyHeatmapGrid } from "../components/DailyHeatmapGrid";
 import { FrequencyGrid, type FrequencyGridCell } from "../components/FrequencyGrid";
+import { StreakBadge } from "../components/StreakBadge";
 import { WeeklyBarChart } from "../components/WeeklyBarChart";
 import type { DailyLog } from "../types";
 
@@ -21,22 +22,22 @@ export function PracticeHistoryScreen({
   return (
     <div className="practice-history-screen">
       <header>
-        <h1>練習履歴</h1>
-        <p className="practice-history-screen__streak">連続学習日数: {streak}日</p>
+        <StreakBadge streak={streak} />
+        <h1>History</h1>
       </header>
 
       <section>
-        <h2>直近7日間</h2>
+        <h2>Last 7 Days</h2>
         <WeeklyBarChart series={weeklySeries} />
       </section>
 
       <section>
-        <h2>直近196日間</h2>
+        <h2>Last 28 Weeks</h2>
         <DailyHeatmapGrid days={yearlySeries} />
       </section>
 
       <section>
-        <h2>全英文</h2>
+        <h2>All Sentences</h2>
         <FrequencyGrid cells={contentCells} />
       </section>
     </div>

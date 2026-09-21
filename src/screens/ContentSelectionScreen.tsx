@@ -91,7 +91,7 @@ export function ContentSelectionScreen({
             {selectedCount}/{items.length}
           </span>
         </div>
-        <h1>英文選択</h1>
+        <h1>Sentences</h1>
         <button type="button" onClick={onOpenSettings}>
           設定
         </button>
@@ -153,8 +153,7 @@ export function ContentSelectionScreen({
                     <p className="content-selection-screen__item-text">{item.englishText}</p>
                     <div className="content-selection-screen__item-footer">
                       <span className="content-selection-screen__item-meta">
-                        リピーティング: {item.repeatingCount}回 / シャドーイング:{" "}
-                        {item.shadowingCount}回
+                        Repeating: {item.repeatingCount} / Shadowing: {item.shadowingCount}
                       </span>
                       <button
                         type="button"

@@ -76,7 +76,10 @@ describe("App", () => {
     render(<App />);
 
     expect(await screen.findByText("Hello world.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "練習" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Practice" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 
   it("お気に入りボタンをクリックしても英文一覧の再取得は発生しない（画面のちらつき防止の回帰テスト）", async () => {
@@ -132,7 +135,7 @@ describe("App", () => {
 
     // 同期完了後、アプリ本体（タブナビゲーション）に遷移する（モックのsyncFromDriveは
     // 即座に解決するため、"同期中"表示は一瞬で過ぎ去る可能性があり、最終状態で検証する）
-    expect(await screen.findByRole("button", { name: "英文選択" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Sentences" })).toBeInTheDocument();
     expect(syncFromDrive).toHaveBeenCalledWith(
       expect.objectContaining({ rootFolderId: "folder-123", accessToken: "token" }),
     );
@@ -152,7 +155,7 @@ describe("App", () => {
     ).toBeInTheDocument();
     // 練習画面のUI（モード切替・タブナビゲーション）自体は残る
     expect(screen.getByRole("radio", { name: "Repeating" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "英文選択" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sentences" })).toBeInTheDocument();
     // 再生系ボタンはdisabledになる
     expect(screen.getByRole("button", { name: "Play" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
@@ -192,7 +195,7 @@ describe("App", () => {
     render(<App />);
     await screen.findByText("Hello world.");
 
-    fireEvent.click(screen.getByRole("button", { name: "英文選択" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sentences" }));
 
     expect(await screen.findByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
   });
@@ -205,9 +208,9 @@ describe("App", () => {
     render(<App />);
     await screen.findByText("Hello world.");
 
-    fireEvent.click(screen.getByRole("button", { name: "練習履歴" }));
+    fireEvent.click(screen.getByRole("button", { name: "History" }));
 
-    expect(await screen.findByRole("heading", { name: "練習履歴" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "History" })).toBeInTheDocument();
   });
 
   it("英文選択画面の設定ボタンで設定画面が開き、閉じるボタンで英文選択画面に戻る", async () => {
@@ -217,13 +220,13 @@ describe("App", () => {
 
     render(<App />);
     await screen.findByText("Hello world.");
-    fireEvent.click(screen.getByRole("button", { name: "英文選択" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sentences" }));
     await screen.findByRole("heading", { name: /カテゴリ 01/ });
 
     fireEvent.click(screen.getByRole("button", { name: "設定" }));
     expect(await screen.findByLabelText("Google DriveのフォルダIDまたはURL")).toBeInTheDocument();
     // 設定画面表示中はタブナビゲーションを隠す
-    expect(screen.queryByRole("button", { name: "練習" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Practice" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "閉じる" }));
     expect(await screen.findByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();

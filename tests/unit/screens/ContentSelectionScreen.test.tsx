@@ -125,8 +125,8 @@ describe("ContentSelectionScreen", () => {
     expandCategory("01");
     expect(screen.getByText("#1")).toBeInTheDocument();
     expect(screen.getByText("Hello world.")).toBeInTheDocument();
-    expect(screen.getByText(/リピーティング: 2回/)).toBeInTheDocument();
-    expect(screen.getByText(/シャドーイング: 1回/)).toBeInTheDocument();
+    expect(screen.getByText(/Repeating: 2\b/)).toBeInTheDocument();
+    expect(screen.getByText(/Shadowing: 1\b/)).toBeInTheDocument();
   });
 
   it("練習対象チェックボックスはselectedContentIdsを反映する", () => {
@@ -209,7 +209,7 @@ describe("ContentSelectionScreen", () => {
   it("全選択チェックボックスと選択数は、見出し（header）内にまとめて表示される", () => {
     renderScreen({ selectedContentIds: [1, 3] });
     const header = screen.getByRole("banner");
-    expect(within(header).getByRole("heading", { name: "英文選択" })).toBeInTheDocument();
+    expect(within(header).getByRole("heading", { name: "Sentences" })).toBeInTheDocument();
     expect(within(header).getByLabelText("すべて選択")).toBeInTheDocument();
     expect(within(header).getByText("2/3")).toBeInTheDocument();
   });
