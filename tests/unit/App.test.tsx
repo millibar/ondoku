@@ -151,7 +151,7 @@ describe("App", () => {
       ),
     ).toBeInTheDocument();
     // 練習画面のUI（モード切替・タブナビゲーション）自体は残る
-    expect(screen.getByRole("button", { name: "リピーティング" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Repeating" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "英文選択" })).toBeInTheDocument();
     // 再生系ボタンはdisabledになる
     expect(screen.getByRole("button", { name: "再生" })).toBeDisabled();

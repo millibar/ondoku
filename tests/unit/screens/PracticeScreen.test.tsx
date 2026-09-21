@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { PracticeScreen } from "../../../src/screens/PracticeScreen";
 
 // 参照: docs/test-plan.md 5章、docs/spec.md 4章、5.3節、5.3.2節
@@ -50,7 +50,7 @@ describe("PracticeScreen", () => {
     // 配置し、UIの位置が英文ごとに動かないようにする。参照: docs/spec.md 5.3節
     const { container } = renderScreen();
     const text = container.textContent ?? "";
-    const modeToggleIndex = text.indexOf("リピーティング");
+    const modeToggleIndex = text.indexOf("Repeating");
     const indexDisplayIndex = text.indexOf("1/560");
     const playbackControlsIndex = text.indexOf("前へ");
     const categoryIndex = text.indexOf("カテゴリ 01");
@@ -65,17 +65,40 @@ describe("PracticeScreen", () => {
     expect(contentNumberIndex).toBeLessThan(englishTextIndex);
   });
 
-  it("シャドーイングボタンを押すとonChangePracticeModeが'shadowing'で呼ばれる", () => {
+  it("練習モードはラジオボタン（Repeating／Shadowing）で、見出し（h1）の中に表示される", () => {
+    renderScreen();
+    const heading = screen.getByRole("heading", { level: 1 });
+    const group = within(heading).getByRole("radiogroup", { name: "練習モード" });
+    expect(within(group).getAllByRole("radio")).toHaveLength(2);
+    expect(within(group).getByRole("radio", { name: "Repeating" })).toBeInTheDocument();
+    expect(within(group).getByRole("radio", { name: "Shadowing" })).toBeInTheDocument();
+    // 見出しを兼ねるため、「練習」という見出し文言は無い
+    expect(screen.queryByRole("heading", { name: "練習" })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { practiceMode: "repeating", checked: "Repeating", unchecked: "Shadowing" },
+    { practiceMode: "shadowing", checked: "Shadowing", unchecked: "Repeating" },
+  ] as const)(
+    "practiceMode=$practiceModeのとき、$checkedのラジオボタンだけがcheckedになる",
+    ({ practiceMode, checked, unchecked }) => {
+      renderScreen({ practiceMode });
+      expect(screen.getByRole("radio", { name: checked })).toBeChecked();
+      expect(screen.getByRole("radio", { name: unchecked })).not.toBeChecked();
+    },
+  );
+
+  it("Shadowingを選ぶとonChangePracticeModeが'shadowing'で呼ばれる", () => {
     const onChangePracticeMode = vi.fn();
     renderScreen({ practiceMode: "repeating", onChangePracticeMode });
-    fireEvent.click(screen.getByRole("button", { name: "シャドーイング" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Shadowing" }));
     expect(onChangePracticeMode).toHaveBeenCalledWith("shadowing");
   });
 
-  it("リピーティングボタンを押すとonChangePracticeModeが'repeating'で呼ばれる", () => {
+  it("Repeatingを選ぶとonChangePracticeModeが'repeating'で呼ばれる", () => {
     const onChangePracticeMode = vi.fn();
     renderScreen({ practiceMode: "shadowing", onChangePracticeMode });
-    fireEvent.click(screen.getByRole("button", { name: "リピーティング" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Repeating" }));
     expect(onChangePracticeMode).toHaveBeenCalledWith("repeating");
   });
 
@@ -117,9 +140,12 @@ describe("PracticeScreen", () => {
     expect(screen.getByText("3/560")).toBeInTheDocument();
   });
 
-  it("連続学習日数が表示される", () => {
+  it("連続学習日数が「n-Day Streak」の英語表記でヘッダー内に表示され、見出し（モード切替）より前（左上）に置かれる", () => {
     renderScreen({ streak: 5 });
-    expect(screen.getByText(/5日/)).toBeInTheDocument();
+    const header = screen.getByRole("banner");
+    const streak = within(header).getByText("5-Day Streak");
+    const heading = within(header).getByRole("heading", { level: 1 });
+    expect(streak.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("お気に入りのみ表示チェックボックスの状態がfavoritesOnlyを反映する", () => {
