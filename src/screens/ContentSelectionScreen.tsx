@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BookmarkSVG } from "../components/icons/Icons";
+import { BookmarkSVG, ChevronDownSVG } from "../components/icons/Icons";
 
 // 英文選択画面。参照: docs/spec.md 4.2節
 
@@ -121,6 +121,7 @@ export function ContentSelectionScreen({
                   <span className="content-selection-screen__category-count">
                     {categorySelectedCount}/{categoryItems.length}
                   </span>
+                  <ChevronDownSVG className="content-selection-screen__category-toggle-icon" />
                 </button>
               </h2>
             </div>
