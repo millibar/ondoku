@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { ContentSelectionScreen } from "../../../src/screens/ContentSelectionScreen";
 
 // 参照: docs/test-plan.md 5章、docs/spec.md 4.2節
@@ -204,6 +204,14 @@ describe("ContentSelectionScreen", () => {
   it("画面上部に「選択中/総数」（全カテゴリ合計）が表示される", () => {
     renderScreen({ selectedContentIds: [1, 3] });
     expect(screen.getByText("2/3")).toBeInTheDocument();
+  });
+
+  it("全選択チェックボックスと選択数は、見出し（header）内にまとめて表示される", () => {
+    renderScreen({ selectedContentIds: [1, 3] });
+    const header = screen.getByRole("banner");
+    expect(within(header).getByRole("heading", { name: "英文選択" })).toBeInTheDocument();
+    expect(within(header).getByLabelText("すべて選択")).toBeInTheDocument();
+    expect(within(header).getByText("2/3")).toBeInTheDocument();
   });
 
   it("画面上部の全選択チェックボックスは、全件選択済みならchecked、クリックで全解除が呼ばれる", () => {

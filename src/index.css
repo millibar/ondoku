@@ -403,7 +403,6 @@ select {
   gap: 8px 12px;
 }
 
-.content-selection-screen > header h1,
 .settings-screen > header h1 {
   flex: 1;
 }
@@ -468,26 +467,38 @@ select {
    英文選択画面
    参照: docs/spec.md 4.2節
    ========================================================================== */
-/* スクロールしても常に見えるよう、ヘッダー・サマリー・（開いている）カテゴリ見出しを
-   スタックして固定表示する。オフセットは実測したヘッダー・サマリーの高さに
-   小さめのバッファを足した値（デザイン変更時は再測定して調整すること） */
+/* スクロールしても常に見えるよう、ヘッダー（全選択・選択数を含む）と（開いている）
+   カテゴリ見出しをスタックして固定表示する。--selection-header-h はヘッダーの
+   実測の高さ（デザイン変更時は再測定して調整すること）。
+   --category-padding はカテゴリ見出し・英文一覧の左右の余白 */
 .content-selection-screen {
-  --selection-header-h: 74px;
-  --selection-summary-h: 46px;
+  --selection-header-h: 72px;
+  --category-padding: 16px;
 }
 
-/* 画面上部の全カテゴリ一括選択・選択数サマリー */
+/* ヘッダーは「全選択チェックボックス＋選択数 / 見出し / 設定ボタン」の3カラム。
+   見出しは中央カラム（両脇は1fr）に置き、左右の要素と被らずに画面中央へ寄せる。
+   左右の余白は、カテゴリ枠のborder（1px）とその内側の余白（--category-padding）の分だけ
+   画面の余白より広げ、全選択・カテゴリ・英文の各チェックボックスの左端を縦一列に揃える */
+.content-selection-screen > header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  padding-inline: calc(16px + 1px + var(--category-padding));
+}
+
+.content-selection-screen > header h1 {
+  text-align: center;
+}
+
+.content-selection-screen > header button {
+  justify-self: end;
+}
+
+/* 全カテゴリ一括選択・選択数 */
 .content-selection-screen__summary {
-  position: sticky;
-  top: var(--selection-header-h);
-  z-index: 4;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
   font-weight: 600;
 }
 
@@ -498,34 +509,66 @@ select {
 }
 
 /* カテゴリ単位で英文をグループ化する枠。見出しを枠いっぱいに広げるため枠自体は
-   paddingを持たず、左右の余白は見出し・一覧の各要素側で確保する。
-   見出しの角丸は、枠の border 幅（1px）を引いた内側の角丸に合わせる */
+   paddingを持たず、左右の余白は見出し・一覧の各要素側で確保する */
 .content-selection-screen__category {
-  --category-inner-radius: calc(var(--radius-lg) - 1px);
-
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
 }
 
+/* 見出しは枠のborder（1px）を覆う位置まで広げ、外形を枠の角丸（--radius-lg）と一致させる。
+   固定表示中は、上の角の丸みの外側から、下をスクロールする一覧の背景が透けて見えてしまう。
+   これを防ぐため、上の両角の外側をページ背景色で塗りつぶす（下記の::before/::after）。
+   通常時は、この外側が元々ページ背景そのものなので見た目は変わらない */
 .content-selection-screen__category-header {
   position: sticky;
-  top: calc(var(--selection-header-h) + var(--selection-summary-h));
+  top: var(--selection-header-h);
   z-index: 3;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
+  margin: -1px -1px 0;
+  padding: 0 calc(var(--category-padding) + 1px);
   background: var(--color-primary);
   color: var(--color-on-primary);
-  border-radius: var(--category-inner-radius);
+  border-radius: var(--radius-lg);
 }
 
 /* 展開中は、下に続く一覧と繋がって見えるよう下側の角丸を外す */
 .content-selection-screen__category-header:has(
   .content-selection-screen__category-toggle[aria-expanded="true"]
 ) {
-  border-radius: var(--category-inner-radius) var(--category-inner-radius) 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* 上の左右の角の外側（角丸の外側の三角形の部分）だけをページ背景色で塗る。
+   円の中心を角丸の中心（各擬似要素の右下／左下）に置き、半径の内側は透明にする */
+.content-selection-screen__category-header::before,
+.content-selection-screen__category-header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: var(--radius-lg);
+  height: var(--radius-lg);
+  pointer-events: none;
+}
+
+.content-selection-screen__category-header::before {
+  left: 0;
+  background: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--radius-lg) - 0.5px),
+    var(--color-bg) var(--radius-lg)
+  );
+}
+
+.content-selection-screen__category-header::after {
+  right: 0;
+  background: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--radius-lg) - 0.5px),
+    var(--color-bg) var(--radius-lg)
+  );
 }
 
 .content-selection-screen__category-header h2 {
@@ -646,7 +689,7 @@ select {
 .content-selection-screen__list {
   display: flex;
   flex-direction: column;
-  padding: 0 16px;
+  padding: 0 var(--category-padding);
   overflow: hidden;
   min-height: 0;
 }
