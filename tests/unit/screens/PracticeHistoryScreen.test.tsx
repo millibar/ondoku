@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { PracticeHistoryScreen } from "../../../src/screens/PracticeHistoryScreen";
 
 // 参照: docs/test-plan.md 5章、docs/spec.md 4.3節
@@ -34,9 +34,20 @@ function renderScreen(overrides: Partial<Parameters<typeof PracticeHistoryScreen
 }
 
 describe("PracticeHistoryScreen", () => {
-  it("連続学習日数が表示される", () => {
+  it("見出しは「History」で、各セクションの見出しも英語表記になる", () => {
+    renderScreen();
+    expect(screen.getByRole("heading", { level: 1, name: "History" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Last 7 Days" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Last 28 Weeks" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "All Sentences" })).toBeInTheDocument();
+  });
+
+  it("連続学習日数が「n-Day Streak」の英語表記でヘッダー内に表示され、見出しより前（左上）に置かれる", () => {
     renderScreen({ streak: 7 });
-    expect(screen.getByText("連続学習日数: 7日")).toBeInTheDocument();
+    const header = screen.getByRole("banner");
+    const streak = within(header).getByText("7-Day Streak");
+    const heading = within(header).getByRole("heading", { level: 1 });
+    expect(streak.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("直近7日間の棒グラフが表示される", () => {

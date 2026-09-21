@@ -13,8 +13,8 @@ export function WeeklyBarChart({ series }: WeeklyBarChartProps) {
   return (
     <div className="weekly-bar-chart">
       <ul className="weekly-bar-chart__legend">
-        <li data-series="repeating">リピーティング</li>
-        <li data-series="shadowing">シャドーイング</li>
+        <li data-series="repeating">Repeating</li>
+        <li data-series="shadowing">Shadowing</li>
       </ul>
 
       <div className="weekly-bar-chart__bars">
@@ -42,7 +42,7 @@ export function WeeklyBarChart({ series }: WeeklyBarChartProps) {
   );
 }
 
-const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function weekdayLabel(dateStr: string): string {
   const weekday = new Date(`${dateStr}T00:00:00Z`).getUTCDay();

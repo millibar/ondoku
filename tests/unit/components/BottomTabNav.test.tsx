@@ -7,35 +7,38 @@ import { BottomTabNav } from "../../../src/components/BottomTabNav";
 describe("BottomTabNav", () => {
   it("3つのタブ（練習／英文選択／練習履歴）が表示される", () => {
     render(<BottomTabNav active="practice" disabled={false} onSelect={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "練習" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "英文選択" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "練習履歴" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Practice" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sentences" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "History" })).toBeInTheDocument();
   });
 
   it("activeで指定したタブがaria-pressed=trueになる", () => {
     render(<BottomTabNav active="selection" disabled={false} onSelect={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "英文選択" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Sentences" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    expect(screen.getByRole("button", { name: "練習" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Practice" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 
   it("タブをクリックするとonSelectが呼ばれる", () => {
     const onSelect = vi.fn();
     render(<BottomTabNav active="practice" disabled={false} onSelect={onSelect} />);
-    fireEvent.click(screen.getByRole("button", { name: "練習履歴" }));
+    fireEvent.click(screen.getByRole("button", { name: "History" }));
     expect(onSelect).toHaveBeenCalledWith("history");
   });
 
   it("disabled=trueのとき、英文選択・練習履歴タブは無効になる", () => {
     render(<BottomTabNav active="practice" disabled={true} onSelect={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "英文選択" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "練習履歴" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Sentences" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "History" })).toBeDisabled();
   });
 
   it("disabled=trueでも練習タブ自体は無効にならない", () => {
     render(<BottomTabNav active="selection" disabled={true} onSelect={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "練習" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Practice" })).not.toBeDisabled();
   });
 });

@@ -2,6 +2,7 @@ import { ContentText } from "../components/ContentText";
 import { BookmarkSVG, RepeatOneSVG, ShuffleSVG } from "../components/icons/Icons";
 import { PlaybackControls } from "../components/PlaybackControls";
 import { ProgressBar } from "../components/ProgressBar";
+import { StreakBadge } from "../components/StreakBadge";
 import type { PlaybackStatus } from "../domain/playback";
 import type { Content, OrderSettings, PracticeMode } from "../types";
 
@@ -59,7 +60,7 @@ export function PracticeScreen({
       {/* 1. 練習モード（Repeating／Shadowing）切り替え。見出しを兼ねるラジオボタンで、
           左上に連続学習日数を置く。ラジオボタン自体は視覚的に隠し、選択中のlabelの下線で表す */}
       <header>
-        <p className="practice-screen__streak">{streak}-Day Streak</p>
+        <StreakBadge streak={streak} />
         <h1>
           <span role="radiogroup" aria-label="練習モード" className="practice-screen__mode-toggle">
             <label className="practice-screen__mode-option">
