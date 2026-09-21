@@ -52,7 +52,7 @@ describe("PracticeScreen", () => {
     const text = container.textContent ?? "";
     const modeToggleIndex = text.indexOf("Repeating");
     const indexDisplayIndex = text.indexOf("1/560");
-    const playbackControlsIndex = text.indexOf("前へ");
+    const playbackControlsIndex = text.indexOf("＜");
     const categoryIndex = text.indexOf("カテゴリ 01");
     const contentNumberIndex = text.indexOf("#1");
     const englishTextIndex = text.indexOf("Hello world.");
@@ -125,7 +125,7 @@ describe("PracticeScreen", () => {
   it("再生コントロール（PlaybackControls）が表示され、次へボタンでonNextが呼ばれる", () => {
     const onNext = vi.fn();
     renderScreen({ onNext });
-    fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(onNext).toHaveBeenCalledTimes(1);
   });
 
@@ -172,10 +172,10 @@ describe("PracticeScreen", () => {
 
     it("再生系ボタン（前へ・再生・停止・次へ・お気に入り）がすべて無効になる", () => {
       renderScreen({ content: null });
-      expect(screen.getByRole("button", { name: "前へ" })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "再生" })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "停止" })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Play" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Stop" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
       expect(screen.getByRole("button", { name: "お気に入りに追加" })).toBeDisabled();
     });
 

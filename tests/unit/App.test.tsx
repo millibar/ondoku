@@ -154,8 +154,8 @@ describe("App", () => {
     expect(screen.getByRole("radio", { name: "Repeating" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "英文選択" })).toBeInTheDocument();
     // 再生系ボタンはdisabledになる
-    expect(screen.getByRole("button", { name: "再生" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Play" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
   });
 
   it("お気に入りが1件も無い状態で「お気に入りのみ表示」をONにすると、案内メッセージが表示され再生系ボタンがdisabledになる（回帰テスト）", async () => {
@@ -175,13 +175,13 @@ describe("App", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText("Hello world.")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "再生" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Play" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
 
     // 外すと復帰する
     fireEvent.click(screen.getByLabelText("お気に入りのみ表示"));
     expect(await screen.findByText("Hello world.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "再生" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Play" })).toBeEnabled();
   });
 
   it("英文選択タブに切り替えると英文選択画面が表示される", async () => {
