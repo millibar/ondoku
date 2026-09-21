@@ -74,24 +74,24 @@ export function ContentSelectionScreen({
 
   return (
     <div className="content-selection-screen">
+      {/* 左=全選択チェックボックス＋選択数、中央=見出し、右=設定ボタンの3カラム */}
       <header>
+        <div className="content-selection-screen__summary">
+          <SelectAllCheckbox
+            checked={allSelected}
+            indeterminate={someSelected}
+            ariaLabel="すべて選択"
+            onChange={() => onToggleAllSelection(!allSelected)}
+          />
+          <span className="content-selection-screen__summary-count">
+            {selectedCount}/{items.length}
+          </span>
+        </div>
         <h1>英文選択</h1>
         <button type="button" onClick={onOpenSettings}>
           設定
         </button>
       </header>
-
-      <div className="content-selection-screen__summary">
-        <SelectAllCheckbox
-          checked={allSelected}
-          indeterminate={someSelected}
-          ariaLabel="すべて選択"
-          onChange={() => onToggleAllSelection(!allSelected)}
-        />
-        <span className="content-selection-screen__summary-count">
-          {selectedCount}/{items.length}
-        </span>
-      </div>
 
       {categories.map((categoryId) => {
         const categoryItems = itemsByCategory.get(categoryId) ?? [];
