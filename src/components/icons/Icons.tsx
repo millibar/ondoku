@@ -73,6 +73,24 @@ export function CalendarSVG({ className }: IconProps) {
   );
 }
 
+// カテゴリ見出しの開閉トグル用（下向きキャレット。開くと180度回転させて使う）
+export function ChevronDownSVG({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M6 9l6 6 6-6"></path>
+    </svg>
+  );
+}
+
 // 1リピート再生トグル用
 export function RepeatOneSVG({ className }: IconProps) {
   return (

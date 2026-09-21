@@ -495,19 +495,22 @@ select {
   font-size: 0.875rem;
 }
 
+/* カテゴリ単位で英文カードを視覚的にグループ化する枠 */
 .content-selection-screen__category {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  background: var(--color-surface);
 }
 
 .content-selection-screen__category-header {
   position: sticky;
   top: calc(var(--selection-header-h) + var(--selection-summary-h));
   z-index: 3;
-  margin-inline: -16px;
-  padding: 8px 16px;
-  background: var(--color-bg);
+  background: var(--color-surface);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -516,20 +519,25 @@ select {
 .content-selection-screen__category-header h2 {
   font-size: 1rem;
   margin: 0;
+  flex: 1;
+  min-width: 0;
 }
 
-/* カテゴリ見出しの開閉トグルボタン。見出しテキスト全体をクリック対象にする */
+/* カテゴリ見出しの開閉トグルボタン。h2要素いっぱいに広げてクリック対象を
+   見出し行全体に拡大する（テキスト部分だけがタップ領域にならないように） */
 .content-selection-screen__category-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
   background: none;
   border: none;
-  padding: 0;
+  padding: 8px 0;
   border-radius: 0;
   font: inherit;
   font-weight: 600;
   color: var(--color-text);
+  text-align: left;
 }
 
 .content-selection-screen__category-toggle:hover:not(:disabled) {
@@ -537,16 +545,19 @@ select {
   border-color: transparent;
 }
 
-/* 開閉状態を示す三角アイコン（▸/▾） */
-.content-selection-screen__category-toggle::before {
-  content: "▸";
-  font-size: 0.75rem;
+/* 開閉状態を示すキャレット。見出し行の右端に配置するためmargin-left: autoで押し出す */
+.content-selection-screen__category-toggle-icon {
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+  flex-shrink: 0;
   color: var(--color-text-muted);
   transition: transform 0.15s ease;
 }
 
-.content-selection-screen__category-toggle[aria-expanded="true"]::before {
-  transform: rotate(90deg);
+.content-selection-screen__category-toggle[aria-expanded="true"]
+  .content-selection-screen__category-toggle-icon {
+  transform: rotate(180deg);
 }
 
 .content-selection-screen__category-count {
