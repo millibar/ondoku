@@ -511,6 +511,9 @@ select {
 /* カテゴリ単位で英文をグループ化する枠。見出しを枠いっぱいに広げるため枠自体は
    paddingを持たず、左右の余白は見出し・一覧の各要素側で確保する */
 .content-selection-screen__category {
+  /* 固定表示中の見出しを閉じるときのスクロール先（scrollIntoView）。
+     見出しの固定位置と同じ高さに合わせ、閉じても見出しがその場に留まるようにする */
+  scroll-margin-top: var(--selection-header-h);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);

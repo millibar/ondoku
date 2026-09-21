@@ -56,7 +56,11 @@ export function ContentSelectionScreen({
     return map;
   }, [items]);
 
-  function toggleCategoryCollapsed(categoryId: string) {
+  function toggleCategoryCollapsed(categoryId: string, toggleButton: HTMLElement) {
+    // 開いている見出しを閉じるときは、閉じた後のスクロール位置を先に整える
+    if (!collapsedCategories.has(categoryId)) {
+      keepHeaderInPlace(toggleButton.closest("section"));
+    }
     setCollapsedCategories((prev) => {
       const next = new Set(prev);
       if (next.has(categoryId)) {
@@ -115,7 +119,7 @@ export function ContentSelectionScreen({
                   type="button"
                   className="content-selection-screen__category-toggle"
                   aria-expanded={isExpanded}
-                  onClick={() => toggleCategoryCollapsed(categoryId)}
+                  onClick={(event) => toggleCategoryCollapsed(categoryId, event.currentTarget)}
                 >
                   カテゴリ {categoryId}{" "}
                   <span className="content-selection-screen__category-count">
@@ -171,6 +175,21 @@ export function ContentSelectionScreen({
       })}
     </div>
   );
+}
+
+// 固定表示（sticky）で本来の位置からずれている見出しを閉じるとき、そのカテゴリの位置に
+// スクロール位置を合わせる。何もしないと、閉じて短くなった分だけスクロール位置（上端からの
+// 距離）が相対的にずれ、遠く離れた後ろのカテゴリが画面上部に来てしまう。
+// 固定されていなければ見出しは枠の上端と同じ位置にあるため、ずれの有無で固定中かを判定する
+// （見出しは枠のborder分を覆うため、通常時の見出しの上端＝枠の上端）。
+// スクロール先の余白（固定時の位置）はCSSの scroll-margin-top で指定している
+function keepHeaderInPlace(section: HTMLElement | null) {
+  const header = section?.querySelector(".content-selection-screen__category-header");
+  if (!section || !header) return;
+  const displacement = header.getBoundingClientRect().top - section.getBoundingClientRect().top;
+  if (displacement > 1) {
+    section.scrollIntoView({ block: "start" });
+  }
 }
 
 // 全選択／全解除チェックボックス。一部だけ選択済みの場合はindeterminate表示にする

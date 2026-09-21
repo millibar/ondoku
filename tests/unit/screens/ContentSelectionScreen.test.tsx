@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { ContentSelectionScreen } from "../../../src/screens/ContentSelectionScreen";
 
@@ -251,5 +251,65 @@ describe("ContentSelectionScreen", () => {
     renderScreen({ onOpenSettings });
     fireEvent.click(screen.getByRole("button", { name: "設定" }));
     expect(onOpenSettings).toHaveBeenCalledTimes(1);
+  });
+});
+
+// 固定表示（sticky）中の見出しを押して閉じたときのスクロール位置。
+// jsdomにはレイアウトが無いため、要素の位置（getBoundingClientRect）とscrollIntoViewを差し替えて検証する
+describe("ContentSelectionScreen: カテゴリを閉じたときのスクロール位置", () => {
+  const rect = (top: number) =>
+    ({ top, bottom: top + 40, left: 0, right: 0, width: 0, height: 40, x: 0, y: top }) as DOMRect;
+
+  // 枠（section）の上端 sectionTop と見出しの上端 headerTop を差し替える。
+  // 固定されていなければ両者は一致し、固定中は枠が上へスクロールアウトして見出しだけが下にずれる
+  function mockCategoryRects(sectionTop: number, headerTop: number) {
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains("content-selection-screen__category")) return rect(sectionTop);
+      if (this.classList.contains("content-selection-screen__category-header"))
+        return rect(headerTop);
+      return rect(0);
+    });
+  }
+
+  let scrollIntoView: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView;
+  });
+
+  it("固定表示中の見出しを押して閉じると、そのカテゴリの位置（見出しの位置）にスクロールを合わせる", () => {
+    renderScreen();
+    expandCategory("01");
+    mockCategoryRects(-300, 72);
+    fireEvent.click(screen.getByRole("button", { name: /カテゴリ 01/ }));
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: "start" });
+    // 見出しが属するカテゴリ（section）に対して呼ばれる
+    expect(scrollIntoView.mock.contexts[0]).toBe(
+      screen.getByRole("button", { name: /カテゴリ 01/ }).closest("section"),
+    );
+  });
+
+  it("固定されていない（見出しが本来の位置にある）ときは、閉じてもスクロールしない", () => {
+    renderScreen();
+    expandCategory("01");
+    mockCategoryRects(200, 200);
+    fireEvent.click(screen.getByRole("button", { name: /カテゴリ 01/ }));
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it("カテゴリを開くときは、スクロール位置を動かさない", () => {
+    renderScreen();
+    mockCategoryRects(-300, 72);
+    fireEvent.click(screen.getByRole("button", { name: /カテゴリ 01/ }));
+    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 });
