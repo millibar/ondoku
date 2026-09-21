@@ -14,6 +14,8 @@
   --color-primary: #4338ca;
   --color-primary-hover: #362d9c;
   --color-primary-light: #eceafd;
+  /* プライマリ色の塗りつぶし背景の上に置く文字・アイコン色 */
+  --color-on-primary: #ffffff;
 
   --color-favorite: #f59e0b;
   --color-favorite-bg: #fef3e2;
@@ -239,7 +241,7 @@ select:focus-visible {
 button[aria-pressed="true"] {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 /* button:hover の詳細度（要素+疑似クラス2つ）が button[aria-pressed] の
@@ -247,7 +249,7 @@ button[aria-pressed="true"] {
    選択中トグルの白文字を上書きしてしまう（indigo背景にindigo文字で読めなく
    なる）ため、ホバー時のcolorを明示的に指定し直す */
 button[aria-pressed="true"]:hover:not(:disabled) {
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 /* お気に入り追加／解除ボタン（アイコンのみ表示）。参照: docs/spec.md 4.1節・4.2節 */
@@ -294,13 +296,13 @@ button[aria-pressed="true"]:hover:not(:disabled) {
 .button--primary {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 .button--primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 .button--danger {
@@ -495,14 +497,14 @@ select {
   font-size: 0.875rem;
 }
 
-/* カテゴリ単位で英文カードを視覚的にグループ化する枠 */
+/* カテゴリ単位で英文をグループ化する枠。見出しを枠いっぱいに広げるため枠自体は
+   paddingを持たず、左右の余白は見出し・一覧の各要素側で確保する。
+   見出しの角丸は、枠の border 幅（1px）を引いた内側の角丸に合わせる */
 .content-selection-screen__category {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  --category-inner-radius: calc(var(--radius-lg) - 1px);
+
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 12px 16px;
   background: var(--color-surface);
 }
 
@@ -510,10 +512,20 @@ select {
   position: sticky;
   top: calc(var(--selection-header-h) + var(--selection-summary-h));
   z-index: 3;
-  background: var(--color-surface);
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0 16px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--category-inner-radius);
+}
+
+/* 展開中は、下に続く一覧と繋がって見えるよう下側の角丸を外す */
+.content-selection-screen__category-header:has(
+  .content-selection-screen__category-toggle[aria-expanded="true"]
+) {
+  border-radius: var(--category-inner-radius) var(--category-inner-radius) 0 0;
 }
 
 .content-selection-screen__category-header h2 {
@@ -521,6 +533,47 @@ select {
   margin: 0;
   flex: 1;
   min-width: 0;
+}
+
+/* 見出し内の全選択チェックボックス。プライマリ背景の上ではネイティブ描画
+   （accent-color=プライマリ色）の選択済み状態が背景に溶けて枠が見えなくなるため、
+   自前で描く。未選択=白枠のみ／選択済み=白背景＋プライマリ色のチェック／
+   一部選択=白背景＋プライマリ色のダッシュ。
+   枠線はborderではなくinset shadowで描き、16px四方全体を内容領域にする */
+.content-selection-screen__category-header input[type="checkbox"] {
+  --check-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+  appearance: none;
+  display: grid;
+  place-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 2px var(--color-on-primary);
+}
+
+.content-selection-screen__category-header input[type="checkbox"]::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background: var(--color-primary);
+  mask: var(--check-glyph) center / contain no-repeat;
+  visibility: hidden;
+}
+
+.content-selection-screen__category-header input[type="checkbox"]:checked,
+.content-selection-screen__category-header input[type="checkbox"]:indeterminate {
+  background: var(--color-on-primary);
+}
+
+.content-selection-screen__category-header input[type="checkbox"]:checked::before,
+.content-selection-screen__category-header input[type="checkbox"]:indeterminate::before {
+  visibility: visible;
+}
+
+.content-selection-screen__category-header input[type="checkbox"]:indeterminate {
+  --check-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8h8' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 /* カテゴリ見出しの開閉トグルボタン。h2要素いっぱいに広げてクリック対象を
@@ -536,22 +589,30 @@ select {
   border-radius: 0;
   font: inherit;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-on-primary);
   text-align: left;
 }
 
+/* 共通の button:hover（indigoの文字色）がプライマリ背景の上で読めなくなるため打ち消す */
 .content-selection-screen__category-toggle:hover:not(:disabled) {
-  color: var(--color-primary);
+  color: var(--color-on-primary);
   border-color: transparent;
 }
 
-/* 開閉状態を示すキャレット。見出し行の右端に配置するためmargin-left: autoで押し出す */
+/* 共通の button:active（scale(0.97)の押下フィードバック）は、見出し行全体に広がった
+   このボタンだと横幅が縮んで見えてしまうため無効にする。
+   詳細度は .class:active:not() が button:active:not() を上回る */
+.content-selection-screen__category-toggle:active:not(:disabled) {
+  transform: none;
+}
+
+/* 開閉状態を示すキャレット。見出し行の右端に配置するためmargin-left: autoで押し出す。
+   色はトグルボタンのcolorをcurrentColorで継承する */
 .content-selection-screen__category-toggle-icon {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   margin-left: auto;
   flex-shrink: 0;
-  color: var(--color-text-muted);
   transition: transform 0.15s ease;
 }
 
@@ -563,7 +624,6 @@ select {
 .content-selection-screen__category-count {
   font-weight: 400;
   font-size: 0.8125rem;
-  color: var(--color-text-muted);
 }
 
 /* 開閉アコーディオンの高さアニメーション。grid-template-rowsを0fr⇔1frで
@@ -581,10 +641,12 @@ select {
   grid-template-rows: 1fr;
 }
 
+/* 英文一覧。区切り線を左右の余白の内側に収めるため、paddingはここで確保する
+   （上下にpaddingを付けると0frまで縮まらなくなるため、左右のみ） */
 .content-selection-screen__list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  padding: 0 16px;
   overflow: hidden;
   min-height: 0;
 }
@@ -593,11 +655,12 @@ select {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
-  box-shadow: var(--shadow-sm);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.content-selection-screen__list li:last-child {
+  border-bottom: none;
 }
 
 .content-selection-screen__item-head {
