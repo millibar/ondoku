@@ -242,6 +242,14 @@ button[aria-pressed="true"] {
   color: #fff;
 }
 
+/* button:hover の詳細度（要素+疑似クラス2つ）が button[aria-pressed] の
+   詳細度（要素+属性1つ）を上回り、ホバー中は文字色が常にindigoになって
+   選択中トグルの白文字を上書きしてしまう（indigo背景にindigo文字で読めなく
+   なる）ため、ホバー時のcolorを明示的に指定し直す */
+button[aria-pressed="true"]:hover:not(:disabled) {
+  color: #fff;
+}
+
 /* お気に入り追加／解除ボタン（アイコンのみ表示）。参照: docs/spec.md 4.1節・4.2節 */
 .button--favorite {
   display: inline-flex;
