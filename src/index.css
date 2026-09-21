@@ -555,10 +555,27 @@ select {
   color: var(--color-text-muted);
 }
 
+/* 開閉アコーディオンの高さアニメーション。grid-template-rowsを0fr⇔1frで
+   遷移させることで、中身の高さを都度計算しなくても滑らかにトランジション
+   できる（いわゆる「grid-template-rowsアコーディオン」テクニック）。
+   直下の要素（content-selection-screen__list）にoverflow:hiddenを指定し、
+   自動最小サイズをリセットしないと0frまで縮まらない */
+.content-selection-screen__collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease;
+}
+
+.content-selection-screen__collapse[data-expanded="true"] {
+  grid-template-rows: 1fr;
+}
+
 .content-selection-screen__list {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .content-selection-screen__list li {
