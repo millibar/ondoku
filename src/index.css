@@ -545,16 +545,18 @@ select {
   border-color: transparent;
 }
 
-/* 開閉状態を示す三角アイコン（▸/▾） */
-.content-selection-screen__category-toggle::before {
-  content: "▸";
+/* 開閉状態を示すキャレット（▾/▲）。見出し行の右端に配置するため
+   ::afterにしてmargin-left: autoで押し出す */
+.content-selection-screen__category-toggle::after {
+  content: "▾";
+  margin-left: auto;
   font-size: 0.75rem;
   color: var(--color-text-muted);
   transition: transform 0.15s ease;
 }
 
-.content-selection-screen__category-toggle[aria-expanded="true"]::before {
-  transform: rotate(90deg);
+.content-selection-screen__category-toggle[aria-expanded="true"]::after {
+  transform: rotate(180deg);
 }
 
 .content-selection-screen__category-count {
