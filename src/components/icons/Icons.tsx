@@ -33,7 +33,52 @@ export function BookmarkSVG({ className }: IconProps) {
   );
 }
 
-// 下部タブナビゲーション「練習履歴」タブ用（導入は別途対応。参照: 依頼メッセージ）
+// 下部タブナビゲーション「練習」タブ用（音読を表すマイク）
+export function MicrophoneSVG({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <rect x="176" y="16" width="160" height="288" rx="80"></rect>
+      <path
+        d="M112,240v16c0,79.529,64.471,144,144,144s144-64.471,144-144v-16M256,400v64M176,476h160"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="40"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      ></path>
+    </svg>
+  );
+}
+
+// 下部タブナビゲーション「英文選択」タブ用（英文が並んだ書類）
+export function DocumentSVG({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        d="M120,16h272c30.928,0,56,25.072,56,56v368c0,30.928-25.072,56-56,56H120c-30.928,0-56-25.072-56-56V72
+			C64,41.072,89.072,16,120,16z M132,56c-8.837,0-16,7.163-16,16v368c0,8.837,7.163,16,16,16h248c8.837,0,16-7.163,16-16V72
+			c0-8.837-7.163-16-16-16H132z"
+      ></path>
+      <rect x="152" y="132" width="208" height="44" rx="22"></rect>
+      <rect x="152" y="216" width="208" height="44" rx="22"></rect>
+      <rect x="152" y="300" width="208" height="44" rx="22"></rect>
+      <rect x="152" y="384" width="128" height="44" rx="22"></rect>
+    </svg>
+  );
+}
+
+// 下部タブナビゲーション「練習履歴」タブ用
 export function CalendarSVG({ className }: IconProps) {
   return (
     <svg
