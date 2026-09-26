@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { SettingsScreen } from "../../../src/screens/SettingsScreen";
 
 // 参照: docs/spec.md 4.2.1節（設定画面: Drive接続設定、同期、閉じる）
@@ -78,6 +78,16 @@ describe("SettingsScreen", () => {
     renderScreen({ onLogout });
     fireEvent.click(screen.getByRole("button", { name: "ログアウト" }));
     expect(onLogout).toHaveBeenCalledTimes(1);
+  });
+
+  it("閉じるボタンはアイコン（装飾用SVG）のみで表示され、ヘッダー内で見出しより前（左上）に置かれる", () => {
+    renderScreen();
+    const header = screen.getByRole("banner");
+    const button = within(header).getByRole("button", { name: "閉じる" });
+    const heading = within(header).getByRole("heading", { level: 1 });
+    expect(button.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(button).toHaveTextContent("");
+    expect(button.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("閉じるボタンでonBackが呼ばれる", () => {

@@ -183,6 +183,24 @@ export function SettingsSVG({ className }: IconProps) {
   );
 }
 
+// 設定画面の閉じるボタン用（＜を○で囲んだ形）
+export function BackCircleSVG({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <circle cx="256" cy="256" r="228" strokeWidth="40"></circle>
+      <path d="M296,152L192,256l104,104" strokeWidth="48"></path>
+    </svg>
+  );
+}
+
 // カテゴリ見出しの開閉トグル用（下向きキャレット。開くと180度回転させて使う）
 export function ChevronDownSVG({ className }: IconProps) {
   return (
