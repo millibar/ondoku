@@ -1,40 +1,63 @@
+import type { WeeklyComparisonDay } from "../domain/dailyGrid";
 import type { DailyLog } from "../types";
 
-// 直近N日間の練習回数（リピーティング／シャドーイング別）を表すグループ化棒グラフ。
-// 参照: docs/spec.md 9.4節
+// 今週（日曜始まり）の練習回数（リピーティング／シャドーイング別）を表すグループ化棒グラフ。
+// 前週の同じ曜日の回数を薄い棒で背面に重ね、比較できるようにする。参照: docs/spec.md 9.4節
 
 export interface WeeklyBarChartProps {
-  series: DailyLog[]; // 古い→新しい順
+  days: WeeklyComparisonDay[]; // 日曜→土曜の順（buildWeeklyComparisonの結果を想定）
 }
 
-export function WeeklyBarChart({ series }: WeeklyBarChartProps) {
-  const maxCount = Math.max(1, ...series.flatMap((d) => [d.repeatingCount, d.shadowingCount]));
+type Series = "repeating" | "shadowing";
+
+const SERIES: { id: Series; label: string; count: (log: DailyLog) => number }[] = [
+  { id: "repeating", label: "リピーティング", count: (log) => log.repeatingCount },
+  { id: "shadowing", label: "シャドーイング", count: (log) => log.shadowingCount },
+];
+
+export function WeeklyBarChart({ days }: WeeklyBarChartProps) {
+  const maxCount = Math.max(
+    1,
+    ...days.flatMap((d) =>
+      [d.thisWeek, d.lastWeek].flatMap((log) => [log.repeatingCount, log.shadowingCount]),
+    ),
+  );
+
+  const renderBar = (log: DailyLog, week: "this" | "last", series: (typeof SERIES)[number]) => (
+    <span
+      className="weekly-bar-chart__bar"
+      data-week={week}
+      data-series={series.id}
+      style={{ height: `${(series.count(log) / maxCount) * 100}%` }}
+      aria-label={`${log.date} ${series.label} ${series.count(log)}回`}
+    />
+  );
 
   return (
     <div className="weekly-bar-chart">
       <ul className="weekly-bar-chart__legend">
         <li data-series="repeating">Repeating</li>
         <li data-series="shadowing">Shadowing</li>
+        <li data-series="last-week">Last Week</li>
       </ul>
 
       <div className="weekly-bar-chart__bars">
-        {series.map((day) => (
-          <div key={day.date} className="weekly-bar-chart__day" data-date={day.date}>
+        {days.map((day) => (
+          <div
+            key={day.thisWeek.date}
+            className="weekly-bar-chart__day"
+            data-date={day.thisWeek.date}
+          >
             <div className="weekly-bar-chart__bar-group">
-              <span
-                className="weekly-bar-chart__bar"
-                data-series="repeating"
-                style={{ height: `${(day.repeatingCount / maxCount) * 100}%` }}
-                aria-label={`${day.date} リピーティング ${day.repeatingCount}回`}
-              />
-              <span
-                className="weekly-bar-chart__bar"
-                data-series="shadowing"
-                style={{ height: `${(day.shadowingCount / maxCount) * 100}%` }}
-                aria-label={`${day.date} シャドーイング ${day.shadowingCount}回`}
-              />
+              {SERIES.map((series) => (
+                // 前週の棒を先に置き、今週の棒を手前に重ねる
+                <span key={series.id} className="weekly-bar-chart__bar-slot">
+                  {renderBar(day.lastWeek, "last", series)}
+                  {!day.isFuture && renderBar(day.thisWeek, "this", series)}
+                </span>
+              ))}
             </div>
-            <span className="weekly-bar-chart__day-label">{weekdayLabel(day.date)}</span>
+            <span className="weekly-bar-chart__day-label">{weekdayLabel(day.thisWeek.date)}</span>
           </div>
         ))}
       </div>

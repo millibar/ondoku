@@ -130,6 +130,11 @@
 - 指定期間の範囲外の`DailyLog`は結果に含まれない
 - 基準日（今日）が最後の要素として含まれる
 - 入力の`DailyLog`が日付順でなくても正しく処理される
+- `buildWeeklyComparison`（今週の棒グラフ用）:
+  - 今日を含む週の日曜〜土曜の7日分を曜日順に返し、各曜日に今週と前週（7日前）の`DailyLog`を対応させる
+  - 今日が日曜・週の途中・土曜のいずれでも、先頭が日曜になる
+  - 今日より後の曜日は未来の日として印が付き（今週分は0件）、今日以前は付かない
+  - 該当日の`DailyLog`が無い日は0件として埋められ、ある日はその値が反映される（前週分も同様）
 
 ### 4.11 `data/serviceWorker.ts`（キャッシュ更新、仕様書4.2.1節）
 
@@ -148,9 +153,9 @@
 - `SetupScreen`: フォルダID未入力時は次に進めない、入力後は`localStorage`に保存され次画面に遷移する
 - `SettingsScreen`（参照: docs/spec.md 4.2.1節）: フォルダID保存・同期ボタン・`syncError`表示・キャッシュを更新ボタン・閉じるボタンが動作する
 - `PracticeScreen`（参照: docs/spec.md 4.1節、8.0節）: モード切り替えUI（練習モード／ランダム再生スイッチ／1リピート再生スイッチ）の操作で内部状態が切り替わる。練習モードはヘッダー内の見出し（h1）を兼ねるラジオボタン（Repeating／Shadowing）で、選択中のものだけがcheckedになり、操作でonChangePracticeModeが呼ばれる（「練習」という見出しは無い）。通し番号・カテゴリ・「現在のインデックス/総数」が表示される。カテゴリは通し番号・お気に入りボタンと同じ行（`practice-screen__content-meta`）に、カテゴリ→通し番号→お気に入りボタンの順で並ぶ。連続学習日数が「n-Day Streak」の英語表記でヘッダー内に表示され、見出し（モード切り替え）より前（左上）に置かれる。お気に入りのみ表示チェックボックスの操作で`onChangeFavoritesOnly`が呼ばれる。`content=null`（出題対象が無い）の場合、案内メッセージが表示され、再生系ボタンがdisabledになる一方、お気に入りのみ表示チェックボックスは操作可能なまま残る
-- `WeeklyBarChart`（参照: docs/spec.md 9.4節）: 渡した日数分の棒が描画される。各棒の高さ（相対値）がリピーティング／シャドーイングの回数を反映する。凡例は「Repeating」「Shadowing」、曜日はアルファベット3文字（Sun〜Sat）で表示される
+- `WeeklyBarChart`（参照: docs/spec.md 9.4節）: 7日分（日曜〜土曜）の棒が描画される。各棒の高さ（相対値）がリピーティング／シャドーイングの回数を反映し、今週・前週をあわせた最大値が100%になる。前週の棒が今週の棒と同じ位置に、今週の棒より前（背面）に描画される。未来の日は今週の棒を描画せず前週の棒のみを描画する。凡例は「Repeating」「Shadowing」「Last Week」、曜日はアルファベット3文字（Sun〜Sat）で表示される
 - `DailyHeatmapGrid`（参照: docs/spec.md 9.4節）: 渡されたセルの数だけマスを描画する。各マスの色区分（`data-level`）が日別の合計練習回数通りに反映される
-- `PracticeHistoryScreen`（参照: docs/spec.md 4.3節）: 見出し「History」と、連続学習日数（「n-Day Streak」。見出しより前＝左上）・7日間棒グラフ・196日ヒートマップ・全英文グリッドがすべて表示される。セクション見出しは「Last 7 Days」「Last 28 Weeks」「All Sentences」
+- `PracticeHistoryScreen`（参照: docs/spec.md 4.3節）: 見出し「History」と、連続学習日数（「n-Day Streak」。見出しより前＝左上）・今週の棒グラフ・196日ヒートマップ・全英文グリッドがすべて表示される。セクション見出しは「This Week」「Last 28 Weeks」「All Sentences」
 - `StreakBadge`（参照: docs/spec.md 4.0節）: 連続学習日数が「n-Day Streak」の英語表記で表示される（0日の場合も含む）
 - `BottomTabNav`（参照: docs/spec.md 4.0節）: 3つのタブ（Practice／Sentences／History）が表示され、activeなタブがaria-pressed=trueになる。disabled時はSentences・Historyのみ無効になる
 

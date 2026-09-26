@@ -1126,6 +1126,8 @@ select {
    参照: docs/spec.md 9.4節
    ========================================================================== */
 .weekly-bar-chart {
+  /* 前週の棒（背面に重ねる）の濃さ */
+  --weekly-bar-chart-last-week-opacity: 0.3;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1166,6 +1168,11 @@ select {
   background: var(--color-series-2);
 }
 
+.weekly-bar-chart__legend li[data-series="last-week"]::before {
+  background: var(--color-text-muted);
+  opacity: var(--weekly-bar-chart-last-week-opacity);
+}
+
 .weekly-bar-chart__bars {
   display: flex;
   align-items: flex-end;
@@ -1193,10 +1200,24 @@ select {
   justify-content: center;
 }
 
-.weekly-bar-chart__bar {
+/* 1系列分の棒の置き場所。前週・今週の棒を同じ位置に重ねる（DOM順で後の今週の棒が手前） */
+.weekly-bar-chart__bar-slot {
+  position: relative;
   width: 8px;
+  height: 100%;
+}
+
+.weekly-bar-chart__bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
   min-height: 2px;
   border-radius: 4px 4px 0 0;
+}
+
+.weekly-bar-chart__bar[data-week="last"] {
+  opacity: var(--weekly-bar-chart-last-week-opacity);
 }
 
 .weekly-bar-chart__bar[data-series="repeating"] {
