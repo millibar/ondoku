@@ -133,6 +133,18 @@ describe("SettingsScreen", () => {
     ).toBeTruthy();
   });
 
+  it.each(["同期", "キャッシュを更新"])(
+    "%sボタンは、ラベルの頭に装飾用のSVGアイコンが付く",
+    (name) => {
+      renderScreen();
+      const button = screen.getByRole("button", { name });
+      const icon = button.querySelector("svg");
+      expect(icon).toHaveAttribute("aria-hidden", "true");
+      expect(button.firstElementChild).toBe(icon);
+      expect(button).toHaveTextContent(name);
+    },
+  );
+
   it("同期ボタンでonSyncが呼ばれる", () => {
     const onSync = vi.fn();
     renderScreen({ onSync });
