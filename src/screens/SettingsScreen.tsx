@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { BackCircleSVG } from "../components/icons/Icons";
+import { BackCircleSVG, CloudSyncSVG, RefreshSVG } from "../components/icons/Icons";
 import { extractDriveFolderId } from "../domain/driveFolderId";
 
 // 設定画面（Drive接続設定・同期・キャッシュ更新）。参照: docs/spec.md 4.2.1節
@@ -83,7 +83,8 @@ export function SettingsScreen({
           Google
           Drive上の教材（TSVファイルや音声）を更新した場合、現在のフォルダから教材を取り込み直せます（練習記録・お気に入りは削除されません）。すべての音声をダウンロードし直すため、Wi-Fi環境での実行をおすすめします。
         </p>
-        <button type="button" onClick={onSync}>
+        <button type="button" className="button--with-icon" onClick={onSync}>
+          <CloudSyncSVG />
           同期
         </button>
         {syncError && <p role="alert">{syncError}</p>}
@@ -93,7 +94,8 @@ export function SettingsScreen({
         <p className="settings-screen__description">
           アプリの表示が古いままの場合、キャッシュされたファイルを更新できます（保存済みのデータは削除されません）。
         </p>
-        <button type="button" onClick={onRefreshCache}>
+        <button type="button" className="button--with-icon" onClick={onRefreshCache}>
+          <RefreshSVG />
           キャッシュを更新
         </button>
       </div>
