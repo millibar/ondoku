@@ -198,7 +198,19 @@ ul {
   flex-shrink: 0;
 }
 
-.bottom-tab-nav__button[aria-pressed="true"] {
+/* 選択中タブはタブ全体を塗りつぶさず、アイコンとラベルの色だけで区別する
+   （非選択=グレー、選択中=通常の文字色）。共通の button[aria-pressed] スタイル
+   （indigo塗りつぶし）と button:hover スタイル（indigoの文字色）を打ち消すため、
+   ホバー時の色もaria-pressedごとに明示的に指定し直す */
+.bottom-tab-nav__button[aria-pressed="false"],
+.bottom-tab-nav__button[aria-pressed="false"]:hover:not(:disabled) {
+  color: var(--color-text-muted);
+}
+
+.bottom-tab-nav__button[aria-pressed="true"],
+.bottom-tab-nav__button[aria-pressed="true"]:hover:not(:disabled) {
+  background: transparent;
+  color: var(--color-text);
   font-weight: 600;
 }
 
