@@ -21,7 +21,7 @@ import {
   saveSelectionState,
 } from "./data/localStorage";
 import { refreshAppCache } from "./data/serviceWorker";
-import { buildDailySeries } from "./domain/dailyGrid";
+import { buildDailySeries, buildWeeklyComparison } from "./domain/dailyGrid";
 import { frequencyLevel } from "./domain/grid";
 import type { PlaybackStatus } from "./domain/playback";
 import { buildPlaylist } from "./domain/selection";
@@ -61,7 +61,6 @@ type Screen =
   | { name: "syncing" }
   | { name: "app" };
 
-const WEEKLY_DAYS = 7;
 const YEARLY_DAYS = 196;
 
 const authClient = createGoogleAuthClient({
@@ -355,8 +354,8 @@ function App() {
     [contents, records],
   );
 
-  const weeklySeries = useMemo(
-    () => buildDailySeries(dailyLogs, todayString(), WEEKLY_DAYS),
+  const weeklyComparison = useMemo(
+    () => buildWeeklyComparison(dailyLogs, todayString()),
     [dailyLogs],
   );
   const yearlySeries = useMemo(
@@ -434,7 +433,7 @@ function App() {
             ) : activeTab === "history" ? (
               <PracticeHistoryScreen
                 streak={streak}
-                weeklySeries={weeklySeries}
+                weeklyComparison={weeklyComparison}
                 yearlySeries={yearlySeries}
                 contentCells={contentCells}
               />
