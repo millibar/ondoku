@@ -306,4 +306,104 @@ describe("App", () => {
       rootFolderId: "folder-2",
     });
   });
+
+  describe("同期時の認証（仕様書7.1節）", () => {
+    async function openSettings() {
+      await screen.findByText("Hello world.");
+      // 起動時のサイレント再認証の結果（成功・失敗）が反映されるまで待つ
+      await waitFor(() => expect(requestTokenMock).toHaveBeenCalledTimes(1));
+      await act(async () => {});
+      fireEvent.click(screen.getByRole("button", { name: "Sentences" }));
+      fireEvent.click(await screen.findByRole("button", { name: "Settings" }));
+    }
+
+    beforeEach(() => {
+      saveDriveSettings({ rootFolderId: "folder-1" });
+      vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    });
+
+    it("起動時のサイレント再認証に失敗していても、同期ボタンでその場で認証し、得たトークンで同期する", async () => {
+      requestTokenMock
+        .mockRejectedValueOnce(new Error("no session"))
+        .mockResolvedValueOnce({ accessToken: "token-2", expiresInSeconds: 3600 });
+
+      render(<App />);
+      await openSettings();
+      fireEvent.click(screen.getByRole("button", { name: "同期" }));
+
+      await waitFor(() =>
+        expect(syncFromDrive).toHaveBeenCalledWith(
+          expect.objectContaining({ rootFolderId: "folder-1", accessToken: "token-2" }),
+        ),
+      );
+      expect(requestTokenMock).toHaveBeenCalledTimes(2);
+      expect(requestTokenMock).toHaveBeenLastCalledWith({ silent: true });
+      expect(screen.queryByText(/同期にはログインが必要です/)).not.toBeInTheDocument();
+    });
+
+    it("「変更して同期」でも、トークンが無ければその場で認証してから同期する", async () => {
+      requestTokenMock
+        .mockRejectedValueOnce(new Error("no session"))
+        .mockResolvedValueOnce({ accessToken: "token-2", expiresInSeconds: 3600 });
+
+      render(<App />);
+      await openSettings();
+      fireEvent.click(screen.getByRole("button", { name: "教材を変更する..." }));
+      fireEvent.change(screen.getByLabelText("Google DriveのフォルダIDまたはURL"), {
+        target: { value: "folder-2" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "変更して同期" }));
+
+      await waitFor(() =>
+        expect(syncFromDrive).toHaveBeenCalledWith(
+          expect.objectContaining({ rootFolderId: "folder-2", accessToken: "token-2" }),
+        ),
+      );
+    });
+
+    it("トークンが有効期限内なら、認証をやり直さずに同期する", async () => {
+      requestTokenMock.mockResolvedValue({ accessToken: "token-1", expiresInSeconds: 3600 });
+
+      render(<App />);
+      await openSettings();
+      fireEvent.click(screen.getByRole("button", { name: "同期" }));
+
+      await waitFor(() =>
+        expect(syncFromDrive).toHaveBeenCalledWith(
+          expect.objectContaining({ accessToken: "token-1" }),
+        ),
+      );
+      expect(requestTokenMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("トークンの有効期限切れ（残り60秒未満）なら、認証をやり直してから同期する", async () => {
+      requestTokenMock
+        .mockResolvedValueOnce({ accessToken: "token-1", expiresInSeconds: 30 })
+        .mockResolvedValueOnce({ accessToken: "token-2", expiresInSeconds: 3600 });
+
+      render(<App />);
+      await openSettings();
+      fireEvent.click(screen.getByRole("button", { name: "同期" }));
+
+      await waitFor(() =>
+        expect(syncFromDrive).toHaveBeenCalledWith(
+          expect.objectContaining({ accessToken: "token-2" }),
+        ),
+      );
+      expect(requestTokenMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("同期時の認証に失敗した場合は同期せず、ログイン失敗のメッセージを表示する", async () => {
+      requestTokenMock.mockRejectedValue(new Error("popup_closed"));
+
+      render(<App />);
+      await openSettings();
+      fireEvent.click(screen.getByRole("button", { name: "同期" }));
+
+      expect(
+        await screen.findByText("Googleへのログインに失敗しました。もう一度お試しください。"),
+      ).toBeInTheDocument();
+      expect(syncFromDrive).not.toHaveBeenCalled();
+    });
+  });
 });

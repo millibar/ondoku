@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createGoogleAuthClient } from "./auth/googleAuth";
+import { createGoogleAuthClient, type TokenResult } from "./auth/googleAuth";
 import { BottomTabNav, type TabId } from "./components/BottomTabNav";
 import type { FrequencyGridCell } from "./components/FrequencyGrid";
 import { GOOGLE_DRIVE_READONLY_SCOPE, GOOGLE_OAUTH_CLIENT_ID } from "./config";
@@ -81,6 +81,10 @@ function todayString(): string {
 // ケースがあるため、一定時間で見切りをつけるためのタイムアウト。
 const SILENT_AUTH_TIMEOUT_MS = 5000;
 
+// トークンの有効期限の手前でも、残りがこの時間を切っていれば期限切れとみなして取り直す
+// （同期の途中で期限が切れるのを避けるため）。参照: docs/spec.md 7.1節
+const TOKEN_EXPIRY_MARGIN_MS = 60 * 1000;
+
 function rejectAfter(ms: number): Promise<never> {
   return new Promise((_, reject) => {
     setTimeout(() => reject(new Error("silent auth timed out")), ms);
@@ -90,6 +94,8 @@ function rejectAfter(ms: number): Promise<never> {
 function App() {
   const [screen, setScreen] = useState<Screen>({ name: "loading" });
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  // accessTokenの有効期限（エポックミリ秒）。取得時の有効期間から計算する
+  const tokenExpiresAtRef = useRef(0);
   const [authFailed, setAuthFailed] = useState(false);
   // 初回起動（キャッシュ済みデータが無い）時のログイン/セットアップ/同期フローが
   // 完了したかどうか。キャッシュ済みデータがあれば、これを待たずにアプリ本体へ進む
@@ -159,22 +165,20 @@ function App() {
     saveSelectionState(selectionState);
   }, [selectionState]);
 
+  const storeToken = useCallback((result: TokenResult) => {
+    tokenExpiresAtRef.current = Date.now() + result.expiresInSeconds * 1000;
+    setAccessToken(result.accessToken);
+  }, []);
+
   const runSync = useCallback(
-    async (rootFolderId: string) => {
-      if (accessToken === null) {
-        // オフライン（未ログイン）時は同期できない旨を伝える（仕様書11章）
-        setSyncError(
-          "同期にはログインが必要です。ネットワーク接続とログイン状態を確認してください。",
-        );
-        return;
-      }
+    async (rootFolderId: string, token: string) => {
       setSyncError(null);
       setScreen({ name: "syncing" });
       setSyncProgress(null);
       try {
         const result = await syncFromDrive({
           rootFolderId,
-          accessToken,
+          accessToken: token,
           onProgress: setSyncProgress,
         });
         saveMaterialSettings({ categoryLabel: result.categoryLabel });
@@ -188,7 +192,7 @@ function App() {
       setBootstrapped(true);
       setScreen({ name: "app" });
     },
-    [accessToken, reloadFromDb],
+    [reloadFromDb],
   );
 
   // キャッシュ済みデータが1件でもあれば、認証を待たずに即座にアプリ本体へ進む
@@ -221,7 +225,7 @@ function App() {
     let cancelled = false;
     Promise.race([authClient.requestToken({ silent: true }), rejectAfter(SILENT_AUTH_TIMEOUT_MS)])
       .then((result) => {
-        if (!cancelled) setAccessToken(result.accessToken);
+        if (!cancelled) storeToken(result);
       })
       .catch(() => {
         if (!cancelled) setAuthFailed(true);
@@ -229,7 +233,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [storeToken]);
 
   // 初回起動（キャッシュ済みデータが無い）の場合のみ、認証結果に応じて
   // 初期セットアップ・初回同期・ログイン画面のいずれかへ進む
@@ -243,7 +247,7 @@ function App() {
           setBootstrapped(true);
           setScreen({ name: "setup" });
         } else {
-          void runSync(driveSettings.rootFolderId);
+          void runSync(driveSettings.rootFolderId, accessToken);
         }
       } else if (authFailed) {
         setBootstrapped(true);
@@ -258,7 +262,7 @@ function App() {
     authClient
       .requestToken({ silent: false })
       .then((result) => {
-        setAccessToken(result.accessToken);
+        storeToken(result);
         // ログイン画面まで来たのはブートストラップ判定でauthFailedになったため。
         // 明示ログイン成功を受けて、ブートストラップ判定（Drive設定チェック・初回同期）をやり直す
         setAuthFailed(false);
@@ -267,11 +271,34 @@ function App() {
       .catch(() => setLoginError("ログインに失敗しました。もう一度お試しください。"));
   }
 
-  // 一覧画面・設定画面の両方から呼ばれる「同期」ボタンの共通ハンドラ
+  // 有効なトークンを返す。トークンが無い、または期限切れ（間近を含む）の場合はGISの認証を
+  // 開始して取り直す。iOSでポップアップが制限されないよう、必ずユーザー操作（タップ）の
+  // 処理の中から同期的に呼ぶこと（requestTokenはGISの呼び出しまでを同期的に行う）。
+  // 起動時のサイレント再認証と同じprompt: ''のため、同意済みなら同意画面は出ない。参照: docs/spec.md 7.1節
+  function ensureAccessToken(): Promise<string> {
+    if (accessToken !== null && Date.now() < tokenExpiresAtRef.current - TOKEN_EXPIRY_MARGIN_MS) {
+      return Promise.resolve(accessToken);
+    }
+    return authClient.requestToken({ silent: true }).then((result) => {
+      storeToken(result);
+      return result.accessToken;
+    });
+  }
+
+  // トークンを確保してから同期する（設定画面の「同期」「変更して同期」の共通処理）
+  function syncWithAuth(rootFolderId: string) {
+    setSyncError(null);
+    ensureAccessToken().then(
+      (token) => runSync(rootFolderId, token),
+      () => setSyncError("Googleへのログインに失敗しました。もう一度お試しください。"),
+    );
+  }
+
+  // 設定画面の「同期」ボタン
   function handleSync() {
     const driveSettings = getDriveSettings();
     if (driveSettings) {
-      void runSync(driveSettings.rootFolderId);
+      syncWithAuth(driveSettings.rootFolderId);
     } else {
       setSyncError("Driveフォルダが設定されていません。設定画面から設定してください。");
     }
@@ -419,7 +446,7 @@ function App() {
                   // 保存と同期を1つの操作にまとめる。同期中は同期画面に切り替わり、
                   // 完了後は設定画面（新しいフォルダIDを表示）に戻る。参照: docs/spec.md 4.2.1節
                   saveDriveSettings({ rootFolderId: folderId });
-                  void runSync(folderId);
+                  syncWithAuth(folderId);
                 }}
                 syncError={syncError}
                 onSync={handleSync}
