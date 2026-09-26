@@ -413,6 +413,21 @@ select {
   gap: 8px 12px;
 }
 
+/* タブで切り替える3画面（Sentences／Practice／History）はヘッダーの高さを揃え、
+   タブ切り替え時に見出しの位置がずれないようにする。値は2段構成の練習画面ヘッダーの
+   実測の高さ（border込み。デザイン変更時は再測定して調整すること） */
+.content-selection-screen,
+.practice-screen,
+.practice-history-screen {
+  --screen-header-h: 88px;
+}
+
+.content-selection-screen > header,
+.practice-screen > header,
+.practice-history-screen > header {
+  height: var(--screen-header-h);
+}
+
 .settings-screen > header h1 {
   flex: 1;
 }
@@ -479,10 +494,10 @@ select {
    ========================================================================== */
 /* スクロールしても常に見えるよう、ヘッダー（全選択・選択数を含む）と（開いている）
    カテゴリ見出しをスタックして固定表示する。--selection-header-h はヘッダーの
-   実測の高さ（デザイン変更時は再測定して調整すること）。
+   高さ（3画面共通の --screen-header-h）。
    --category-padding はカテゴリ見出し・英文一覧の左右の余白 */
 .content-selection-screen {
-  --selection-header-h: 72px;
+  --selection-header-h: var(--screen-header-h);
   --category-padding: 16px;
 }
 
