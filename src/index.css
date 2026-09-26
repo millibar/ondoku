@@ -490,11 +490,6 @@ select {
   color: var(--color-text-muted);
 }
 
-.settings-screen__logout {
-  margin-top: auto;
-  align-self: flex-start;
-}
-
 /* ログイン・初期セットアップ画面は中央寄せのカード風レイアウトにする */
 .login-screen,
 .setup-screen {

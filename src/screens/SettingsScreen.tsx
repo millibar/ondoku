@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { BackCircleSVG } from "../components/icons/Icons";
 import { extractDriveFolderId } from "../domain/driveFolderId";
 
-// 設定画面（Drive接続設定・同期・ログアウト）。参照: docs/spec.md 4.2.1節
+// 設定画面（Drive接続設定・同期・キャッシュ更新）。参照: docs/spec.md 4.2.1節
 // 英文選択画面から開くサブ画面（タブナビゲーションには含めない）
 
 export interface SettingsScreenProps {
@@ -14,7 +14,6 @@ export interface SettingsScreenProps {
   // Service WorkerのキャッシュをクリアしてアプリのJS/CSS等を最新化する。
   // IndexedDB・localStorageのデータは削除されない。参照: docs/spec.md 4.2.1節
   onRefreshCache: () => void;
-  onLogout: () => void;
   onBack: () => void;
 }
 
@@ -24,7 +23,6 @@ export function SettingsScreen({
   onSave,
   onSync,
   onRefreshCache,
-  onLogout,
   onBack,
 }: SettingsScreenProps) {
   const [folderId, setFolderId] = useState(currentFolderId);
@@ -74,10 +72,6 @@ export function SettingsScreen({
           キャッシュを更新
         </button>
       </div>
-
-      <button type="button" className="button--danger settings-screen__logout" onClick={onLogout}>
-        ログアウト
-      </button>
     </div>
   );
 }
