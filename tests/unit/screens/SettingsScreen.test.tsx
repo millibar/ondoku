@@ -122,6 +122,17 @@ describe("SettingsScreen", () => {
     });
   });
 
+  it("同期ボタンの上（前）に、同期の説明文が表示される", () => {
+    renderScreen();
+    const description = screen.getByText(
+      "Google Drive上の教材（TSVファイルや音声）を更新した場合、現在のフォルダから教材を取り込み直せます（練習記録・お気に入りは削除されません）。すべての音声をダウンロードし直すため、Wi-Fi環境での実行をおすすめします。",
+    );
+    const button = screen.getByRole("button", { name: "同期" });
+    expect(
+      description.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("同期ボタンでonSyncが呼ばれる", () => {
     const onSync = vi.fn();
     renderScreen({ onSync });

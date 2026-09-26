@@ -78,13 +78,19 @@ export function SettingsScreen({
         </button>
       </div>
 
-      <button type="button" onClick={onSync}>
-        同期
-      </button>
-      {syncError && <p role="alert">{syncError}</p>}
+      <div className="settings-screen__sync">
+        <p className="settings-screen__description">
+          Google
+          Drive上の教材（TSVファイルや音声）を更新した場合、現在のフォルダから教材を取り込み直せます（練習記録・お気に入りは削除されません）。すべての音声をダウンロードし直すため、Wi-Fi環境での実行をおすすめします。
+        </p>
+        <button type="button" onClick={onSync}>
+          同期
+        </button>
+        {syncError && <p role="alert">{syncError}</p>}
+      </div>
 
       <div className="settings-screen__cache">
-        <p className="settings-screen__cache-description">
+        <p className="settings-screen__description">
           アプリの表示が古いままの場合、キャッシュされたファイルを更新できます（保存済みのデータは削除されません）。
         </p>
         <button type="button" onClick={onRefreshCache}>

@@ -536,6 +536,8 @@ select {
   margin-top: 8px;
 }
 
+/* 同期・キャッシュ更新は「説明文＋ボタン」のまとまりで表示する */
+.settings-screen__sync,
 .settings-screen__cache {
   display: flex;
   flex-direction: column;
@@ -544,7 +546,7 @@ select {
   max-width: 360px;
 }
 
-.settings-screen__cache-description {
+.settings-screen__description {
   margin: 0;
   font-size: 0.8125rem;
   color: var(--color-text-muted);
