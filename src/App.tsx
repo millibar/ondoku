@@ -400,10 +400,11 @@ function App() {
             {showSettings ? (
               <SettingsScreen
                 currentFolderId={getDriveSettings()?.rootFolderId ?? ""}
-                onSave={(folderId) => {
+                onChangeFolder={(folderId) => {
+                  // 保存と同期を1つの操作にまとめる。同期中は同期画面に切り替わり、
+                  // 完了後は設定画面（新しいフォルダIDを表示）に戻る。参照: docs/spec.md 4.2.1節
                   saveDriveSettings({ rootFolderId: folderId });
-                  setSettingsVersion((v) => v + 1);
-                  setShowSettings(false);
+                  void runSync(folderId);
                 }}
                 syncError={syncError}
                 onSync={handleSync}
