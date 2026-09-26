@@ -325,11 +325,13 @@ button[aria-pressed="true"]:hover:not(:disabled) {
   color: var(--color-favorite);
 }
 
-/* ラベルの頭にアイコンを付けたボタン（設定画面の同期・キャッシュを更新など） */
+/* ラベルの頭にアイコンを付けたボタン（設定画面の同期・キャッシュを更新など）。
+   左側のアイコンと見た目のバランスを取るため、右側の余白を通常（16px）より6px広げる */
 .button--with-icon {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding-right: 22px;
 }
 
 .button--with-icon svg {
