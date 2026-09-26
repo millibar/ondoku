@@ -11,7 +11,6 @@ function renderScreen(overrides: Partial<Parameters<typeof SettingsScreen>[0]> =
       onSave={vi.fn()}
       onSync={vi.fn()}
       onRefreshCache={vi.fn()}
-      onLogout={vi.fn()}
       onBack={vi.fn()}
       {...overrides}
     />,
@@ -73,11 +72,9 @@ describe("SettingsScreen", () => {
     expect(onRefreshCache).toHaveBeenCalledTimes(1);
   });
 
-  it("ログアウトボタンでonLogoutが呼ばれる", () => {
-    const onLogout = vi.fn();
-    renderScreen({ onLogout });
-    fireEvent.click(screen.getByRole("button", { name: "ログアウト" }));
-    expect(onLogout).toHaveBeenCalledTimes(1);
+  it("ログアウトボタンは表示されない", () => {
+    renderScreen();
+    expect(screen.queryByRole("button", { name: "ログアウト" })).not.toBeInTheDocument();
   });
 
   it("閉じるボタンはアイコン（装飾用SVG）のみで表示され、ヘッダー内で見出しより前（左上）に置かれる", () => {

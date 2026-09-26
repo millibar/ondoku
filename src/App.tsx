@@ -252,15 +252,6 @@ function App() {
       .catch(() => setLoginError("ログインに失敗しました。もう一度お試しください。"));
   }
 
-  function handleLogout() {
-    setAccessToken(null);
-    setContents([]);
-    setRecords(new Map());
-    setActiveTab("practice");
-    setShowSettings(false);
-    setScreen({ name: "login" });
-  }
-
   // 一覧画面・設定画面の両方から呼ばれる「同期」ボタンの共通ハンドラ
   function handleSync() {
     const driveSettings = getDriveSettings();
@@ -417,7 +408,6 @@ function App() {
                 syncError={syncError}
                 onSync={handleSync}
                 onRefreshCache={() => void refreshAppCache()}
-                onLogout={handleLogout}
                 onBack={() => setShowSettings(false)}
               />
             ) : activeTab === "selection" ? (
