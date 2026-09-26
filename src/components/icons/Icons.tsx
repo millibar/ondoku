@@ -33,7 +33,31 @@ export function BookmarkSVG({ className }: IconProps) {
   );
 }
 
-// 下部タブナビゲーション「練習」タブ用（音読を表すマイク）
+// 下部タブナビゲーション「練習」タブ用（音読を表す、話している人の横顔と音の波）
+export function SpeakingHeadSVG({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M72,496c0-56-12-96-28-146c-20-60-24-120-8-174C64,84,148,24,236,32c64,6,90,58,86,118l2,30l28,56
+			c6,12,0,22-12,24l-18,2l2,28c2,10-4,16-12,18l4,14c2,24-12,40-36,40l-36,2v132H72z"
+      ></path>
+      <path
+        d="M394,251a70,70,0,0,1,0,90M440,212a130,130,0,0,1,0,168"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="40"
+        strokeLinecap="round"
+      ></path>
+    </svg>
+  );
+}
+
+// 音読を表すマイク（現在は未使用。練習タブのアイコン候補として残している）
 export function MicrophoneSVG({ className }: IconProps) {
   return (
     <svg

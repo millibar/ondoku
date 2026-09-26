@@ -176,14 +176,14 @@ ul {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* アイコンの真下にラベルを置く縦並び */
+/* アイコンの真下にラベルを置く縦並び。アイコンの上とラベルの下に余白を取る */
 .bottom-tab-nav__button {
   flex: 1;
   min-height: 56px;
   border: none;
   border-radius: 0;
   background: transparent;
-  padding: 8px 8px 6px;
+  padding: 14px 8px 12px;
   font-size: 0.8125rem;
   line-height: 1.2;
   display: flex;
@@ -193,8 +193,8 @@ ul {
 }
 
 .bottom-tab-nav__icon {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
 }
 
