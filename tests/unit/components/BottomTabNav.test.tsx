@@ -12,6 +12,17 @@ describe("BottomTabNav", () => {
     expect(screen.getByRole("button", { name: "History" })).toBeInTheDocument();
   });
 
+  it("各タブにアイコン（装飾用SVG）がテキストより前に表示される", () => {
+    render(<BottomTabNav active="practice" disabled={false} onSelect={vi.fn()} />);
+    for (const name of ["Practice", "Sentences", "History"]) {
+      const button = screen.getByRole("button", { name });
+      const icon = button.querySelector("svg");
+      expect(icon).not.toBeNull();
+      expect(icon).toHaveAttribute("aria-hidden", "true");
+      expect(button.firstElementChild).toBe(icon);
+    }
+  });
+
   it("activeで指定したタブがaria-pressed=trueになる", () => {
     render(<BottomTabNav active="selection" disabled={false} onSelect={vi.fn()} />);
     expect(screen.getByRole("button", { name: "Sentences" })).toHaveAttribute(

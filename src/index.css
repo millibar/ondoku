@@ -176,14 +176,26 @@ ul {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* アイコンの真下にラベルを置く縦並び。アイコンの上とラベルの下に余白を取る */
 .bottom-tab-nav__button {
   flex: 1;
   min-height: 56px;
   border: none;
   border-radius: 0;
   background: transparent;
-  padding: 12px 8px;
+  padding: 20px 8px 28px;
   font-size: 0.8125rem;
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bottom-tab-nav__icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
 }
 
 .bottom-tab-nav__button[aria-pressed="true"] {
