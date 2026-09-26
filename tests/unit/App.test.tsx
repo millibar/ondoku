@@ -223,7 +223,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sentences" }));
     await screen.findByRole("heading", { name: /カテゴリ 01/ });
 
-    fireEvent.click(screen.getByRole("button", { name: "設定" }));
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(await screen.findByLabelText("Google DriveのフォルダIDまたはURL")).toBeInTheDocument();
     // 設定画面表示中はタブナビゲーションを隠す
     expect(screen.queryByRole("button", { name: "Practice" })).not.toBeInTheDocument();

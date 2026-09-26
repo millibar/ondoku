@@ -452,8 +452,21 @@ select {
   height: var(--screen-header-h);
 }
 
+/* 設定画面のヘッダーは「閉じるボタン / 見出し / 空き」の3カラム。見出しは中央カラム
+   （両脇は1fr）に置き、閉じるボタンと被らずに画面中央へ寄せる */
+.settings-screen > header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+
 .settings-screen > header h1 {
-  flex: 1;
+  grid-column: 2;
+  text-align: center;
+}
+
+.settings-screen > header button {
+  grid-column: 1;
+  justify-self: start;
 }
 
 .settings-screen__form {
@@ -541,6 +554,32 @@ select {
 
 .content-selection-screen > header button {
   justify-self: end;
+}
+
+/* 設定ボタン（歯車アイコンのみ）・設定画面の閉じるボタン（＜を○で囲んだアイコンのみ）。
+   枠を付けずアイコンだけを表示する */
+.content-selection-screen__settings-button,
+.settings-screen__back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.content-selection-screen__settings-button:hover:not(:disabled),
+.settings-screen__back-button:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.content-selection-screen__settings-button svg,
+.settings-screen__back-button svg {
+  width: 24px;
+  height: 24px;
 }
 
 /* 全カテゴリ一括選択・選択数 */

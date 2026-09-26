@@ -246,10 +246,17 @@ describe("ContentSelectionScreen", () => {
     expect(onToggleFavorite).toHaveBeenCalledWith(1);
   });
 
+  it("設定ボタンは歯車アイコン（装飾用SVG）のみで表示され、名前は「Settings」", () => {
+    renderScreen();
+    const button = screen.getByRole("button", { name: "Settings" });
+    expect(button.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(button).toHaveTextContent("");
+  });
+
   it("設定ボタンでonOpenSettingsが呼ばれる", () => {
     const onOpenSettings = vi.fn();
     renderScreen({ onOpenSettings });
-    fireEvent.click(screen.getByRole("button", { name: "設定" }));
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
 });

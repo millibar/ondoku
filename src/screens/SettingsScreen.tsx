@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { BackCircleSVG } from "../components/icons/Icons";
 import { extractDriveFolderId } from "../domain/driveFolderId";
 
 // 設定画面（Drive接続設定・同期・ログアウト）。参照: docs/spec.md 4.2.1節
@@ -36,10 +37,15 @@ export function SettingsScreen({
   return (
     <div className="settings-screen">
       <header>
-        <h1>設定</h1>
-        <button type="button" onClick={onBack}>
-          閉じる
+        <button
+          type="button"
+          className="settings-screen__back-button"
+          aria-label="閉じる"
+          onClick={onBack}
+        >
+          <BackCircleSVG />
         </button>
+        <h1>Settings</h1>
       </header>
 
       <form className="settings-screen__form" onSubmit={handleSubmit}>
