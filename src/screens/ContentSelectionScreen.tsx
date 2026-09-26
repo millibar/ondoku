@@ -13,6 +13,8 @@ export interface ContentSelectionItem {
 }
 
 export interface ContentSelectionScreenProps {
+  // カテゴリの表示名（例: "SECTION"）。見出しは「<表示名> <カテゴリ番号>」の形で表示する。参照: docs/spec.md 4.0節
+  categoryLabel: string;
   items: ContentSelectionItem[]; // id昇順で渡される想定
   selectedContentIds: number[]; // 出題範囲（練習対象チェックボックスでONのID一覧）
   onToggleContentSelection: (id: number) => void;
@@ -23,6 +25,7 @@ export interface ContentSelectionScreenProps {
 }
 
 export function ContentSelectionScreen({
+  categoryLabel,
   items,
   selectedContentIds,
   onToggleContentSelection,
@@ -116,7 +119,7 @@ export function ContentSelectionScreen({
               <SelectAllCheckbox
                 checked={allSelectedInCategory}
                 indeterminate={someSelectedInCategory}
-                ariaLabel={`カテゴリ${categoryId}を全選択`}
+                ariaLabel={`${categoryLabel} ${categoryId}を全選択`}
                 onChange={() => onToggleCategorySelection(categoryId, !allSelectedInCategory)}
               />
               <h2>
@@ -126,7 +129,7 @@ export function ContentSelectionScreen({
                   aria-expanded={isExpanded}
                   onClick={(event) => toggleCategoryCollapsed(categoryId, event.currentTarget)}
                 >
-                  カテゴリ {categoryId}{" "}
+                  {categoryLabel} {categoryId}{" "}
                   <span className="content-selection-screen__category-count">
                     {categorySelectedCount}/{categoryItems.length}
                   </span>

@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "../../src/App";
 import { getAllContents, getAudioBlob, setFavorite } from "../../src/data/db";
-import { saveDriveSettings } from "../../src/data/localStorage";
+import {
+  getMaterialSettings,
+  saveDriveSettings,
+  saveMaterialSettings,
+} from "../../src/data/localStorage";
 import { syncFromDrive } from "../../src/domain/sync";
 
 // 参照: docs/spec.md 4章（画面遷移。3タブ構成＋設定サブ画面）
@@ -46,9 +50,12 @@ beforeEach(() => {
   vi.mocked(getAllContents).mockReset().mockResolvedValue([]);
   vi.mocked(getAudioBlob).mockClear();
   vi.mocked(setFavorite).mockReset();
-  vi.mocked(syncFromDrive)
-    .mockReset()
-    .mockResolvedValue({ contentCount: 0, audioFailures: [], tsvParseErrors: [] });
+  vi.mocked(syncFromDrive).mockReset().mockResolvedValue({
+    contentCount: 0,
+    audioFailures: [],
+    tsvParseErrors: [],
+    categoryLabel: null,
+  });
 });
 
 describe("App", () => {
@@ -197,7 +204,46 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Sentences" }));
 
-    expect(await screen.findByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Category 01/ })).toBeInTheDocument();
+  });
+
+  it("カテゴリの表示名が保存されていない場合は「Category」で表示される", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+
+    expect(await screen.findByText("Category 01")).toBeInTheDocument();
+  });
+
+  it("保存済みのカテゴリの表示名が起動時から使われる", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    saveMaterialSettings({ categoryLabel: "Chapter" });
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+
+    expect(await screen.findByText("Chapter 01")).toBeInTheDocument();
+  });
+
+  it("同期で得たカテゴリの表示名がlocalStorageに保存され、画面の表示に反映される", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    // 初回起動（キャッシュ無し）→同期→同期後の再読み込みでコンテンツが得られる
+    vi.mocked(getAllContents).mockResolvedValueOnce([]).mockResolvedValue([SAMPLE_CONTENT]);
+    vi.mocked(syncFromDrive).mockResolvedValue({
+      contentCount: 1,
+      audioFailures: [],
+      tsvParseErrors: [],
+      categoryLabel: "SECTION",
+    });
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+
+    expect(await screen.findByText("SECTION 01")).toBeInTheDocument();
+    expect(getMaterialSettings()).toEqual({ categoryLabel: "SECTION" });
   });
 
   it("練習履歴タブに切り替えると練習履歴画面（連続学習日数）が表示される", async () => {
@@ -221,7 +267,7 @@ describe("App", () => {
     render(<App />);
     await screen.findByText("Hello world.");
     fireEvent.click(screen.getByRole("button", { name: "Sentences" }));
-    await screen.findByRole("heading", { name: /カテゴリ 01/ });
+    await screen.findByRole("heading", { name: /Category 01/ });
 
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
@@ -229,7 +275,7 @@ describe("App", () => {
     expect(screen.queryByRole("button", { name: "Practice" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "閉じる" }));
-    expect(await screen.findByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Category 01/ })).toBeInTheDocument();
   });
 
   it("設定画面の「変更して同期」で、フォルダIDが保存され、新しいフォルダからの同期が始まる", async () => {

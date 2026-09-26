@@ -14,9 +14,11 @@ import {
 } from "./data/db";
 import {
   getDriveSettings,
+  getMaterialSettings,
   getPracticeSessionState,
   getSelectionState,
   saveDriveSettings,
+  saveMaterialSettings,
   savePracticeSessionState,
   saveSelectionState,
 } from "./data/localStorage";
@@ -68,6 +70,9 @@ const authClient = createGoogleAuthClient({
   scope: GOOGLE_DRIVE_READONLY_SCOPE,
 });
 
+// TSVの2列目のヘッダーからカテゴリの表示名が得られない場合の表示名。参照: docs/spec.md 6章
+const DEFAULT_CATEGORY_LABEL = "Category";
+
 function todayString(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -101,6 +106,10 @@ function App() {
   // アプリ本体（タブ）側の状態。参照: docs/spec.md 4章
   const [activeTab, setActiveTab] = useState<TabId>("practice");
   const [showSettings, setShowSettings] = useState(false);
+  // カテゴリの表示名（TSVの2列目のヘッダー）。同期のたびに更新し、localStorageに保存する
+  const [categoryLabel, setCategoryLabel] = useState<string | null>(
+    () => getMaterialSettings()?.categoryLabel ?? null,
+  );
   const [practiceStatus, setPracticeStatus] = useState<PlaybackStatus>("stopped");
   // localStorageの読み出しは初回マウント時の1回だけにする（useStateの遅延初期化）。
   // 起動時点でSelectionStateが既に保存されていたか（＝初回同期直後の
@@ -163,7 +172,13 @@ function App() {
       setScreen({ name: "syncing" });
       setSyncProgress(null);
       try {
-        await syncFromDrive({ rootFolderId, accessToken, onProgress: setSyncProgress });
+        const result = await syncFromDrive({
+          rootFolderId,
+          accessToken,
+          onProgress: setSyncProgress,
+        });
+        saveMaterialSettings({ categoryLabel: result.categoryLabel });
+        setCategoryLabel(result.categoryLabel);
       } catch (error) {
         // 同期に失敗しても、キャッシュ済みデータでアプリ本体は表示できるようにする
         console.error("同期に失敗しました", error);
@@ -413,6 +428,7 @@ function App() {
               />
             ) : activeTab === "selection" ? (
               <ContentSelectionScreen
+                categoryLabel={categoryLabel ?? DEFAULT_CATEGORY_LABEL}
                 items={selectionItems}
                 selectedContentIds={selectionState.selectedContentIds}
                 onToggleContentSelection={handleToggleContentSelection}
@@ -430,6 +446,7 @@ function App() {
               />
             ) : (
               <PracticeContainer
+                categoryLabel={categoryLabel ?? DEFAULT_CATEGORY_LABEL}
                 contents={contents}
                 records={records}
                 playlist={playlist}
@@ -459,6 +476,7 @@ function App() {
 // 練習画面の実配線（音声再生エンジン・練習記録の保存・練習状態の保存復元）。
 // App.tsx専用の内部コンポーネントのためexportしない。
 function PracticeContainer({
+  categoryLabel,
   contents,
   records,
   playlist,
@@ -468,6 +486,7 @@ function PracticeContainer({
   onToggleFavorite,
   onStatusChange,
 }: {
+  categoryLabel: string;
   contents: Content[];
   records: Map<number, PracticeRecord>;
   playlist: number[];
@@ -603,6 +622,7 @@ function PracticeContainer({
       ) : (
         <PracticeScreen
           content={currentContent}
+          categoryLabel={categoryLabel}
           practiceMode={practiceMode}
           orderSettings={orderSettings}
           onChangePracticeMode={setPracticeMode}

@@ -91,4 +91,33 @@ describe("parseTsv", () => {
     ]);
     expect(result.errors).toEqual([expect.objectContaining({ line: 3 })]);
   });
+
+  describe("カテゴリの表示名（2列目のヘッダー）", () => {
+    function labelOf(header: string) {
+      return parseTsv([header, "1\t01\tHello.\tこんにちは。\t001.opus"].join("\n")).categoryLabel;
+    }
+
+    it("2列目のヘッダーをカテゴリの表示名として返す（大文字小文字はそのまま）", () => {
+      expect(labelOf("id\tSECTION\tenglishText\tjapaneseText\taudioFileName")).toBe("SECTION");
+      expect(labelOf("id\tChapter\tenglishText\tjapaneseText\taudioFileName")).toBe("Chapter");
+    });
+
+    it("前後の空白は取り除く", () => {
+      expect(labelOf("id\t  SECTION \tenglishText\tjapaneseText\taudioFileName")).toBe("SECTION");
+    });
+
+    it("2列目のヘッダーが従来の列名categoryId（大文字小文字を区別しない）の場合はnullを返す", () => {
+      expect(labelOf(HEADER)).toBeNull();
+      expect(labelOf("id\tCATEGORYID\tenglishText\tjapaneseText\taudioFileName")).toBeNull();
+    });
+
+    it("2列目のヘッダーが空の場合はnullを返す", () => {
+      expect(labelOf("id\t \tenglishText\tjapaneseText\taudioFileName")).toBeNull();
+      expect(labelOf("id")).toBeNull();
+    });
+
+    it("空のTSVの場合はnullを返す", () => {
+      expect(parseTsv("").categoryLabel).toBeNull();
+    });
+  });
 });
