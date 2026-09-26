@@ -93,6 +93,12 @@ body,
   height: 100%;
 }
 
+/* iPhone（Safari/PWA）で画面上端・下端をスワイプしたときのバウンス（ラバーバンド）を止める */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   background: var(--color-bg);
@@ -158,6 +164,8 @@ ul {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  /* 実際にスクロールするのはこの要素なので、ここでもバウンスを止める */
+  overscroll-behavior: none;
 }
 
 .bottom-tab-nav {
