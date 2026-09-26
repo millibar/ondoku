@@ -163,6 +163,7 @@
 - `StreakBadge`（参照: docs/spec.md 4.0節）: 連続学習日数が「n-Day Streak」の英語表記で表示される（0日の場合も含む）
 - `BottomTabNav`（参照: docs/spec.md 4.0節）: 3つのタブ（Practice／Sentences／History）が表示され、activeなタブがaria-pressed=trueになる。disabled時はSentences・Historyのみ無効になる
 
+- `App`（認証。参照: docs/spec.md 7.1節）: 起動時のサイレント再認証に失敗していても（キャッシュ済みデータでアプリ本体を表示中）、設定画面の「同期」を押すとその場で認証を行い、得たトークンで同期する。「変更して同期」でも同様。トークンが有効期限内なら認証をやり直さずに同期する。有効期限切れ（残り60秒未満）なら認証をやり直してから同期する。同期時の認証に失敗した場合は同期せず、ログイン失敗のメッセージを表示する
 - `App`（参照: docs/spec.md 4.0節・6章）: カテゴリの表示名が保存されていない場合は「Category」で表示される。同期で得たカテゴリの表示名が`localStorage`に保存され、画面の表示に反映される
 
 ## 6. E2Eテストシナリオ（Playwright）
