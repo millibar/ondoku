@@ -65,6 +65,20 @@ describe("PracticeScreen", () => {
     expect(contentNumberIndex).toBeLessThan(englishTextIndex);
   });
 
+  it("カテゴリは通し番号・お気に入りボタンと同じ行に、カテゴリ→通し番号→お気に入りボタンの順で並ぶ", () => {
+    renderScreen();
+    const category = screen.getByText("カテゴリ 01");
+    const contentNumber = screen.getByText("#1");
+    const favoriteButton = screen.getByRole("button", { name: "お気に入りに追加" });
+    const meta = category.parentElement;
+
+    expect(meta).toHaveClass("practice-screen__content-meta");
+    expect(contentNumber.parentElement).toBe(meta);
+    expect(favoriteButton.parentElement).toBe(meta);
+    expect(category.nextElementSibling).toBe(contentNumber);
+    expect(contentNumber.nextElementSibling).toBe(favoriteButton);
+  });
+
   it("練習モードはラジオボタン（Repeating／Shadowing）で、見出し（h1）の中に表示される", () => {
     renderScreen();
     const heading = screen.getByRole("heading", { level: 1 });
