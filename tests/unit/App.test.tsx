@@ -50,14 +50,12 @@ beforeEach(() => {
   vi.mocked(getAllContents).mockReset().mockResolvedValue([]);
   vi.mocked(getAudioBlob).mockClear();
   vi.mocked(setFavorite).mockReset();
-  vi.mocked(syncFromDrive)
-    .mockReset()
-    .mockResolvedValue({
-      contentCount: 0,
-      audioFailures: [],
-      tsvParseErrors: [],
-      categoryLabel: null,
-    });
+  vi.mocked(syncFromDrive).mockReset().mockResolvedValue({
+    contentCount: 0,
+    audioFailures: [],
+    tsvParseErrors: [],
+    categoryLabel: null,
+  });
 });
 
 describe("App", () => {
