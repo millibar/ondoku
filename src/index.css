@@ -895,18 +895,16 @@ select {
   border-radius: 4px;
 }
 
-/* 3. カテゴリ */
-.practice-screen__category {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-}
-
-/* 4. 通し番号・お気に入りボタン */
+/* カテゴリ・通し番号・お気に入りボタン（1行に並べる） */
 .practice-screen__content-meta {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.practice-screen__category {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
 }
 
 .practice-screen__content-number {

@@ -145,13 +145,11 @@ export function PracticeScreen({
         onPrev={onPrev}
       />
 
-      {/* 5. カテゴリ */}
-      <p className="practice-screen__category">
-        {content ? `カテゴリ ${content.categoryId}` : "-"}
-      </p>
-
-      {/* 6. 通し番号・お気に入りボタン */}
+      {/* 5. カテゴリ・通し番号・お気に入りボタン（1行に並べる） */}
       <div className="practice-screen__content-meta">
+        <span className="practice-screen__category">
+          {content ? `カテゴリ ${content.categoryId}` : "-"}
+        </span>
         <span className="practice-screen__content-number">{content ? `#${content.id}` : "-"}</span>
         <button
           type="button"
@@ -165,7 +163,7 @@ export function PracticeScreen({
         </button>
       </div>
 
-      {/* 7. 英文・日本語訳（文字数でカードの高さが変わるため最後に配置する） */}
+      {/* 6. 英文・日本語訳（文字数でカードの高さが変わるため最後に配置する） */}
       {content ? (
         <ContentText englishText={content.englishText} japaneseText={content.japaneseText} />
       ) : (
