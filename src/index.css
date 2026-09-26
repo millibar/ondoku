@@ -370,13 +370,15 @@ select {
    ========================================================================== */
 /* タブ本体（app-shell__content）の中身として表示する3画面。
    高さはapp-shellのタブバー分を差し引いた領域に収まるよう、
-   min-height:100dvhは指定しない（設定画面はオーバーレイのため別扱い） */
+   min-height:100dvhは指定しない（設定画面はオーバーレイのため別扱い）。
+   上パディングを付けると、固定ヘッダー（sticky）がスクロール開始時にその分だけ
+   上下に動いて見えるため0にし、ヘッダーを最初から画面上端に置く */
 .content-selection-screen,
 .practice-screen,
 .practice-history-screen {
   max-width: 640px;
   margin-inline: auto;
-  padding: 16px 16px 24px;
+  padding: 0 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -387,7 +389,7 @@ select {
   min-height: 100dvh;
   max-width: 640px;
   margin-inline: auto;
-  padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 24px);
   display: flex;
   flex-direction: column;
   gap: 20px;
