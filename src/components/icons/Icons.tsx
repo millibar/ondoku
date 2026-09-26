@@ -33,7 +33,30 @@ export function BookmarkSVG({ className }: IconProps) {
   );
 }
 
-// 下部タブナビゲーション「練習」タブ用（音読を表す、話している人の横顔と音の波）
+// 下部タブナビゲーション「練習」タブ用（開いた本）
+export function OpenBookSVG({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M240,100c-60-40-124-52-184-48v336c60-4,124,8,184,44V100z"></path>
+      <path d="M272,100c60-40,124-52,184-48v336c-60-4-124,8-184,44V100z"></path>
+      <path
+        d="M24,112v312c88-8,160,4,232,44c72-40,144-52,232-44V112"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="36"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      ></path>
+    </svg>
+  );
+}
+
+// 音読を表す、話している人の横顔と音の波（現在は未使用。練習タブのアイコン候補として残している）
 export function SpeakingHeadSVG({ className }: IconProps) {
   return (
     <svg
@@ -102,7 +125,31 @@ export function DocumentSVG({ className }: IconProps) {
   );
 }
 
-// 下部タブナビゲーション「練習履歴」タブ用
+// 下部タブナビゲーション「練習履歴」タブ用（棒グラフ）
+export function BarChartSVG({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M44,40v428h428"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="48"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      ></path>
+      <rect x="120" y="272" width="88" height="152" rx="20"></rect>
+      <rect x="240" y="176" width="88" height="248" rx="20"></rect>
+      <rect x="360" y="80" width="88" height="344" rx="20"></rect>
+    </svg>
+  );
+}
+
+// カレンダー（現在は未使用。練習履歴タブのアイコン候補として残している）
 export function CalendarSVG({ className }: IconProps) {
   return (
     <svg

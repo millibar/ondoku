@@ -183,7 +183,7 @@ ul {
   border: none;
   border-radius: 0;
   background: transparent;
-  padding: 14px 8px 12px;
+  padding: 20px 8px 28px;
   font-size: 0.8125rem;
   line-height: 1.2;
   display: flex;
@@ -193,8 +193,8 @@ ul {
 }
 
 .bottom-tab-nav__icon {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
 }
 

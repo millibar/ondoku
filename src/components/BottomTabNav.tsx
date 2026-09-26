@@ -1,7 +1,7 @@
 // 下部タブナビゲーション。参照: docs/spec.md 4章
 
 import type { ComponentType } from "react";
-import { CalendarSVG, DocumentSVG, SpeakingHeadSVG, type IconProps } from "./icons/Icons";
+import { BarChartSVG, DocumentSVG, OpenBookSVG, type IconProps } from "./icons/Icons";
 
 export type TabId = "practice" | "selection" | "history";
 
@@ -14,9 +14,9 @@ export interface BottomTabNavProps {
 
 // 各タブはアイコンの下にラベルを表示する
 const TABS: { id: TabId; label: string; Icon: ComponentType<IconProps> }[] = [
-  { id: "practice", label: "Practice", Icon: SpeakingHeadSVG },
+  { id: "practice", label: "Practice", Icon: OpenBookSVG },
   { id: "selection", label: "Sentences", Icon: DocumentSVG },
-  { id: "history", label: "History", Icon: CalendarSVG },
+  { id: "history", label: "History", Icon: BarChartSVG },
 ];
 
 export function BottomTabNav({ active, disabled, onSelect }: BottomTabNavProps) {
