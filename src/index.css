@@ -469,13 +469,75 @@ select {
   justify-self: start;
 }
 
-.settings-screen__form {
+/* 現在のフォルダID（表示のみ）と「教材を変更する...」ボタン */
+.settings-screen__folder {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.settings-screen__folder-label {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+/* フォルダIDは長い英数字の列のため、画面幅で折り返す */
+.settings-screen__folder-id {
+  align-self: stretch;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+/* 教材変更ポップアップ。画面全体を半透明の背景で覆い、中央にカードを表示する */
+.settings-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.settings-dialog {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.settings-dialog h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.settings-dialog__form {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-width: 360px;
 }
 
+.settings-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* 同期・キャッシュ更新は「説明文＋ボタン」のまとまりで表示する */
+.settings-screen__sync,
 .settings-screen__cache {
   display: flex;
   flex-direction: column;
@@ -484,7 +546,7 @@ select {
   max-width: 360px;
 }
 
-.settings-screen__cache-description {
+.settings-screen__description {
   margin: 0;
   font-size: 0.8125rem;
   color: var(--color-text-muted);

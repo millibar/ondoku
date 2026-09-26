@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "../../src/App";
 import { getAllContents, getAudioBlob, setFavorite } from "../../src/data/db";
 import { saveDriveSettings } from "../../src/data/localStorage";
@@ -224,11 +224,40 @@ describe("App", () => {
     await screen.findByRole("heading", { name: /カテゴリ 01/ });
 
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(await screen.findByLabelText("Google DriveのフォルダIDまたはURL")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
     // 設定画面表示中はタブナビゲーションを隠す
     expect(screen.queryByRole("button", { name: "Practice" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "閉じる" }));
     expect(await screen.findByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
+  });
+
+  it("設定画面の「変更して同期」で、フォルダIDが保存され、新しいフォルダからの同期が始まる", async () => {
+    saveDriveSettings({ rootFolderId: "folder-1" });
+    vi.mocked(getAllContents).mockResolvedValue([SAMPLE_CONTENT]);
+    requestTokenMock.mockResolvedValue({ accessToken: "token", expiresInSeconds: 3600 });
+
+    render(<App />);
+    await screen.findByText("Hello world.");
+    // サイレント再認証が完了してトークンを得るまで待つ
+    await waitFor(() => expect(requestTokenMock).toHaveBeenCalled());
+    await act(async () => {});
+    fireEvent.click(screen.getByRole("button", { name: "Sentences" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Settings" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "教材を変更する..." }));
+    fireEvent.change(screen.getByLabelText("Google DriveのフォルダIDまたはURL"), {
+      target: { value: "folder-2" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "変更して同期" }));
+
+    await waitFor(() =>
+      expect(syncFromDrive).toHaveBeenCalledWith(
+        expect.objectContaining({ rootFolderId: "folder-2", accessToken: "token" }),
+      ),
+    );
+    expect(JSON.parse(localStorage.getItem("ondoku:driveSettings") ?? "{}")).toEqual({
+      rootFolderId: "folder-2",
+    });
   });
 });
