@@ -19,6 +19,7 @@ export interface SyncResult {
   contentCount: number;
   audioFailures: number[]; // 取得できなかったコンテンツのID一覧
   tsvParseErrors: TsvParseError[];
+  categoryLabel: string | null; // カテゴリの表示名（TSVの2列目のヘッダー）。参照: docs/spec.md 6章
 }
 
 export interface SyncOptions {
@@ -59,7 +60,7 @@ export async function syncFromDrive(options: SyncOptions): Promise<SyncResult> {
     throw new SyncAbortError(`TSVファイルの取得に失敗しました: ${(error as Error).message}`);
   }
 
-  const { contents, errors: tsvParseErrors } = parseTsv(tsvText);
+  const { contents, errors: tsvParseErrors, categoryLabel } = parseTsv(tsvText);
   if (contents.length === 0) {
     throw new SyncAbortError("TSVから有効なコンテンツを1件も読み取れませんでした");
   }
@@ -93,5 +94,5 @@ export async function syncFromDrive(options: SyncOptions): Promise<SyncResult> {
     onProgress?.({ totalCount, completedCount });
   }
 
-  return { contentCount: contents.length, audioFailures, tsvParseErrors };
+  return { contentCount: contents.length, audioFailures, tsvParseErrors, categoryLabel };
 }

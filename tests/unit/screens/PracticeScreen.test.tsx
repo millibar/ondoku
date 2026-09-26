@@ -16,6 +16,7 @@ function renderScreen(overrides: Partial<Parameters<typeof PracticeScreen>[0]> =
   return render(
     <PracticeScreen
       content={CONTENT}
+      categoryLabel="SECTION"
       practiceMode="shadowing"
       orderSettings={{ isRandom: false, isRepeatOne: false }}
       onChangePracticeMode={vi.fn()}
@@ -53,7 +54,7 @@ describe("PracticeScreen", () => {
     const modeToggleIndex = text.indexOf("Repeating");
     const indexDisplayIndex = text.indexOf("1/560");
     const playbackControlsIndex = text.indexOf("＜");
-    const categoryIndex = text.indexOf("カテゴリ 01");
+    const categoryIndex = text.indexOf("SECTION 01");
     const contentNumberIndex = text.indexOf("#1");
     const englishTextIndex = text.indexOf("Hello world.");
 
@@ -67,7 +68,7 @@ describe("PracticeScreen", () => {
 
   it("カテゴリは通し番号・お気に入りボタンと同じ行に、カテゴリ→通し番号→お気に入りボタンの順で並ぶ", () => {
     renderScreen();
-    const category = screen.getByText("カテゴリ 01");
+    const category = screen.getByText("SECTION 01");
     const contentNumber = screen.getByText("#1");
     const favoriteButton = screen.getByRole("button", { name: "お気に入りに追加" });
     const meta = category.parentElement;
@@ -146,7 +147,7 @@ describe("PracticeScreen", () => {
   it("現在の英文の通し番号・カテゴリが表示される", () => {
     renderScreen();
     expect(screen.getByText("#1")).toBeInTheDocument();
-    expect(screen.getByText("カテゴリ 01")).toBeInTheDocument();
+    expect(screen.getByText("SECTION 01")).toBeInTheDocument();
   });
 
   it("出題範囲内の総数と現在のインデックスが表示される", () => {

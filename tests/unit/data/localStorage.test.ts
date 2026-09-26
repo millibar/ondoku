@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   getDriveSettings,
+  getMaterialSettings,
   getPracticeSessionState,
   getSelectionState,
   saveDriveSettings,
+  saveMaterialSettings,
   savePracticeSessionState,
   saveSelectionState,
 } from "../../../src/data/localStorage";
@@ -75,5 +77,19 @@ describe("DriveSettings", () => {
   it("不正なJSONが入っていた場合はクラッシュせずnullを返す", () => {
     localStorage.setItem("ondoku:driveSettings", "{not valid json");
     expect(getDriveSettings()).toBeNull();
+  });
+});
+
+describe("MaterialSettings", () => {
+  it("保存・復元で往復してもオブジェクトが一致する", () => {
+    saveMaterialSettings({ categoryLabel: "SECTION" });
+    expect(getMaterialSettings()).toEqual({ categoryLabel: "SECTION" });
+
+    saveMaterialSettings({ categoryLabel: null });
+    expect(getMaterialSettings()).toEqual({ categoryLabel: null });
+  });
+
+  it("値が存在しない場合はnullを返す", () => {
+    expect(getMaterialSettings()).toBeNull();
   });
 });

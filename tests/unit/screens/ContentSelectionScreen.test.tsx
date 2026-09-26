@@ -35,6 +35,7 @@ function renderScreen(overrides: Partial<Parameters<typeof ContentSelectionScree
   return render(
     <ContentSelectionScreen
       items={ITEMS}
+      categoryLabel="SECTION"
       selectedContentIds={[1, 2, 3]}
       onToggleContentSelection={vi.fn()}
       onToggleCategorySelection={vi.fn()}
@@ -48,21 +49,21 @@ function renderScreen(overrides: Partial<Parameters<typeof ContentSelectionScree
 
 // カテゴリは既定で折りたたまれているため、配下の英文カードを検証する前に展開する
 function expandCategory(categoryId: string) {
-  fireEvent.click(screen.getByRole("button", { name: new RegExp(`カテゴリ ${categoryId}`) }));
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(`SECTION ${categoryId}`) }));
 }
 
 // 開閉アニメーションのため配下の英文カードは折りたたみ中もDOMに残り続け、
 // data-expanded属性とinertで開閉状態を表す
 function getCollapseRegion(categoryId: string) {
-  const toggle = screen.getByRole("button", { name: new RegExp(`カテゴリ ${categoryId}`) });
+  const toggle = screen.getByRole("button", { name: new RegExp(`SECTION ${categoryId}`) });
   return toggle.closest("section")?.querySelector(".content-selection-screen__collapse");
 }
 
 describe("ContentSelectionScreen", () => {
   it("カテゴリごとに見出しが表示される（既定は折りたたみ状態）", () => {
     renderScreen();
-    expect(screen.getByRole("heading", { name: /カテゴリ 01/ })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /カテゴリ 02/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /SECTION 01/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /SECTION 02/ })).toBeInTheDocument();
     expect(getCollapseRegion("01")).toHaveAttribute("data-expanded", "false");
     expect(getCollapseRegion("01")).toHaveAttribute("inert");
     expect(getCollapseRegion("02")).toHaveAttribute("data-expanded", "false");
@@ -102,7 +103,7 @@ describe("ContentSelectionScreen", () => {
     const headingNames = screen
       .getAllByRole("heading", { level: 2 })
       .map((heading) => heading.textContent?.replace(/\s+/g, " ").trim());
-    expect(headingNames).toEqual(["カテゴリ 2 0/1", "カテゴリ 10 0/1", "カテゴリ 1 0/1"]);
+    expect(headingNames).toEqual(["SECTION 2 0/1", "SECTION 10 0/1", "SECTION 1 0/1"]);
   });
 
   it("カテゴリ見出しを展開すると、配下に該当英文が表示される", () => {
@@ -116,8 +117,8 @@ describe("ContentSelectionScreen", () => {
   it("カテゴリ見出しに「選択中/総数」が表示される", () => {
     renderScreen({ selectedContentIds: [1] });
     // カテゴリ01は2件中1件選択、カテゴリ02は1件中0件選択
-    expect(screen.getByRole("heading", { name: /カテゴリ 01.*1\/2/ })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /カテゴリ 02.*0\/1/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /SECTION 01.*1\/2/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /SECTION 02.*0\/1/ })).toBeInTheDocument();
   });
 
   it("英文カードに通し番号・英文・回数が表示される", () => {
@@ -149,7 +150,7 @@ describe("ContentSelectionScreen", () => {
   it("カテゴリ内が全選択済みの場合、見出しの全選択チェックボックスはcheckedになり、クリックで全解除が呼ばれる", () => {
     const onToggleCategorySelection = vi.fn();
     renderScreen({ selectedContentIds: [1, 2, 3], onToggleCategorySelection });
-    const checkbox = screen.getByLabelText("カテゴリ01を全選択");
+    const checkbox = screen.getByLabelText("SECTION 01を全選択");
     expect(checkbox).toBeChecked();
     fireEvent.click(checkbox);
     expect(onToggleCategorySelection).toHaveBeenCalledWith("01", false);
@@ -158,7 +159,7 @@ describe("ContentSelectionScreen", () => {
   it("カテゴリ内が未選択の場合、見出しの全選択チェックボックスはuncheckedになり、クリックで全選択が呼ばれる", () => {
     const onToggleCategorySelection = vi.fn();
     renderScreen({ selectedContentIds: [2], onToggleCategorySelection });
-    const checkbox = screen.getByLabelText("カテゴリ01を全選択");
+    const checkbox = screen.getByLabelText("SECTION 01を全選択");
     expect(checkbox).not.toBeChecked();
     fireEvent.click(checkbox);
     expect(onToggleCategorySelection).toHaveBeenCalledWith("01", true);
@@ -166,13 +167,13 @@ describe("ContentSelectionScreen", () => {
 
   it("カテゴリ内が一部だけ選択済みの場合、見出しの全選択チェックボックスはindeterminateになる", () => {
     renderScreen({ selectedContentIds: [1] });
-    const checkbox = screen.getByLabelText("カテゴリ01を全選択") as HTMLInputElement;
+    const checkbox = screen.getByLabelText("SECTION 01を全選択") as HTMLInputElement;
     expect(checkbox.indeterminate).toBe(true);
   });
 
   it("カテゴリ見出しをクリックすると、配下の英文カードの開閉状態が切り替わる（既定は折りたたみ状態）", () => {
     renderScreen();
-    const toggle = screen.getByRole("button", { name: /カテゴリ 01/ });
+    const toggle = screen.getByRole("button", { name: /SECTION 01/ });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(getCollapseRegion("01")).toHaveAttribute("data-expanded", "false");
     expect(getCollapseRegion("01")).toHaveAttribute("inert");
@@ -196,7 +197,7 @@ describe("ContentSelectionScreen", () => {
     const onToggleCategorySelection = vi.fn();
     const onToggleContentSelection = vi.fn();
     renderScreen({ onToggleCategorySelection, onToggleContentSelection });
-    fireEvent.click(screen.getByRole("button", { name: /カテゴリ 01/ }));
+    fireEvent.click(screen.getByRole("button", { name: /SECTION 01/ }));
     expect(onToggleCategorySelection).not.toHaveBeenCalled();
     expect(onToggleContentSelection).not.toHaveBeenCalled();
   });
@@ -296,12 +297,12 @@ describe("ContentSelectionScreen: カテゴリを閉じたときのスクロー�
     renderScreen();
     expandCategory("01");
     mockCategoryRects(-300, 72);
-    fireEvent.click(screen.getByRole("button", { name: /カテゴリ 01/ }));
+    fireEvent.click(screen.getByRole("button", { name: /SECTION 01/ }));
     expect(scrollIntoView).toHaveBeenCalledTimes(1);
     expect(scrollIntoView).toHaveBeenCalledWith({ block: "start" });
     // 見出しが属するカテゴリ（section）に対して呼ばれる
     expect(scrollIntoView.mock.contexts[0]).toBe(
-      screen.getByRole("button", { name: /カテゴリ 01/ }).closest("section"),
+      screen.getByRole("button", { name: /SECTION 01/ }).closest("section"),
     );
   });
 
@@ -309,14 +310,14 @@ describe("ContentSelectionScreen: カテゴリを閉じたときのスクロー�
     renderScreen();
     expandCategory("01");
     mockCategoryRects(200, 200);
-    fireEvent.click(screen.getByRole("button", { name: /カテゴリ 01/ }));
+    fireEvent.click(screen.getByRole("button", { name: /SECTION 01/ }));
     expect(scrollIntoView).not.toHaveBeenCalled();
   });
 
   it("カテゴリを開くときは、スクロール位置を動かさない", () => {
     renderScreen();
     mockCategoryRects(-300, 72);
-    fireEvent.click(screen.getByRole("button", { name: /カテゴリ 01/ }));
+    fireEvent.click(screen.getByRole("button", { name: /SECTION 01/ }));
     expect(scrollIntoView).not.toHaveBeenCalled();
   });
 });

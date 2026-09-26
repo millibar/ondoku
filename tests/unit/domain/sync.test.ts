@@ -71,6 +71,8 @@ describe("syncFromDrive", () => {
     expect(result.contentCount).toBe(2);
     expect(result.audioFailures).toEqual([]);
     expect(result.tsvParseErrors).toEqual([]);
+    // 2列目のヘッダーが従来のcategoryIdのため、表示名は無し
+    expect(result.categoryLabel).toBeNull();
 
     expect(onProgress).toHaveBeenCalledWith({ totalCount: 2, completedCount: 0 });
     expect(onProgress).toHaveBeenLastCalledWith({ totalCount: 2, completedCount: 2 });
@@ -112,5 +114,19 @@ describe("syncFromDrive", () => {
     ).rejects.toThrow(SyncAbortError);
 
     expect(await getAllContents()).toEqual([]);
+  });
+
+  it("TSVの2列目のヘッダーから得たカテゴリの表示名を返す", async () => {
+    const tsv = TSV.replace("\tcategoryId\t", "\tSECTION\t");
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(fileListResponse(ROOT_FILES))
+      .mockResolvedValueOnce(textResponse(tsv))
+      .mockResolvedValueOnce(binaryResponse())
+      .mockResolvedValueOnce(binaryResponse());
+
+    const result = await syncFromDrive({ rootFolderId: "root", accessToken: "token", fetchImpl });
+
+    expect(result.categoryLabel).toBe("SECTION");
   });
 });

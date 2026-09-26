@@ -10,9 +10,14 @@ export interface TsvParseError {
 export interface TsvParseResult {
   contents: Content[];
   errors: TsvParseError[];
+  // カテゴリの表示名（2列目のヘッダー。例: "SECTION"）。空、または従来の列名categoryIdの場合はnull
+  categoryLabel: string | null;
 }
 
 const EXPECTED_COLUMN_COUNT = 5;
+
+// 2列目のヘッダーがこの列名の場合は、表示名が指定されていないものとして扱う（大文字小文字を区別しない）
+const DEFAULT_CATEGORY_COLUMN_NAME = "categoryid";
 
 export function parseTsv(tsvText: string): TsvParseResult {
   const lines = tsvText.split(/\r\n|\r|\n/);
@@ -54,5 +59,11 @@ export function parseTsv(tsvText: string): TsvParseResult {
     contents.push({ id, categoryId, englishText, japaneseText, audioFileName });
   }
 
-  return { contents, errors };
+  return { contents, errors, categoryLabel: parseCategoryLabel(lines[0]) };
+}
+
+function parseCategoryLabel(headerLine: string): string | null {
+  const label = (headerLine.split("\t")[1] ?? "").trim();
+  if (label === "" || label.toLowerCase() === DEFAULT_CATEGORY_COLUMN_NAME) return null;
+  return label;
 }

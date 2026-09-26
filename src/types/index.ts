@@ -60,3 +60,8 @@ export interface SelectionState {
 export interface DriveSettings {
   rootFolderId: string;
 }
+
+// 教材ごとの設定（localStorage）。同期時にTSVのヘッダーから取り出して保存する。参照: docs/spec.md 6章
+export interface MaterialSettings {
+  categoryLabel: string | null; // カテゴリの表示名（TSVの2列目のヘッダー）。使えない場合はnull
+}

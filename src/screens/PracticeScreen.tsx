@@ -15,6 +15,8 @@ export interface PracticeScreenProps {
   // 出題範囲が0件（練習対象チェックがすべてOFF、またはお気に入りのみ表示ONで
   // お気に入りが1件も無い場合等）はnullになる。参照: docs/spec.md 8.0節
   content: Content | null;
+  // カテゴリの表示名（例: "SECTION"）。「<表示名> <カテゴリ番号>」の形で表示する。参照: docs/spec.md 4.0節
+  categoryLabel: string;
   practiceMode: PracticeMode;
   orderSettings: OrderSettings;
   onChangePracticeMode: (mode: PracticeMode) => void;
@@ -37,6 +39,7 @@ export interface PracticeScreenProps {
 
 export function PracticeScreen({
   content,
+  categoryLabel,
   practiceMode,
   orderSettings,
   onChangePracticeMode,
@@ -148,7 +151,7 @@ export function PracticeScreen({
       {/* 5. カテゴリ・通し番号・お気に入りボタン（1行に並べる） */}
       <div className="practice-screen__content-meta">
         <span className="practice-screen__category">
-          {content ? `カテゴリ ${content.categoryId}` : "-"}
+          {content ? `${categoryLabel} ${content.categoryId}` : "-"}
         </span>
         <span className="practice-screen__content-number">{content ? `#${content.id}` : "-"}</span>
         <button
