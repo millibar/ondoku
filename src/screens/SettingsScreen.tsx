@@ -36,7 +36,7 @@ export function SettingsScreen({
   return (
     <div className="settings-screen">
       <header>
-        <h1>設定</h1>
+        <h1>Settings</h1>
         <button type="button" onClick={onBack}>
           閉じる
         </button>

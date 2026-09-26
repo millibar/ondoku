@@ -19,6 +19,11 @@ function renderScreen(overrides: Partial<Parameters<typeof SettingsScreen>[0]> =
 }
 
 describe("SettingsScreen", () => {
+  it("見出しは「Settings」", () => {
+    renderScreen();
+    expect(screen.getByRole("heading", { level: 1, name: "Settings" })).toBeInTheDocument();
+  });
+
   it("現在のフォルダIDが初期値として表示される", () => {
     renderScreen();
     expect(screen.getByLabelText("Google DriveのフォルダIDまたはURL")).toHaveValue("folder-abc");

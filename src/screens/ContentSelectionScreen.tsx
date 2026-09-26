@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BookmarkSVG, ChevronDownSVG } from "../components/icons/Icons";
+import { BookmarkSVG, ChevronDownSVG, SettingsSVG } from "../components/icons/Icons";
 
 // 英文選択画面。参照: docs/spec.md 4.2節
 
@@ -92,8 +92,13 @@ export function ContentSelectionScreen({
           </span>
         </div>
         <h1>Sentences</h1>
-        <button type="button" onClick={onOpenSettings}>
-          設定
+        <button
+          type="button"
+          className="content-selection-screen__settings-button"
+          aria-label="Settings"
+          onClick={onOpenSettings}
+        >
+          <SettingsSVG />
         </button>
       </header>
 

@@ -12,12 +12,7 @@ export interface IconProps {
 // お気に入り追加／解除トグルボタン用
 export function BookmarkSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <path
         d="M37.246,0v479.924c0,11.47,6.122,22.064,16.052,27.786c9.945,5.732,22.173,5.717,32.103-0.029l138.445-80.198
 			c19.889-11.514,44.42-11.514,64.309,0l138.453,80.198c9.922,5.746,22.158,5.761,32.088,0.029
@@ -36,12 +31,7 @@ export function BookmarkSVG({ className }: IconProps) {
 // 下部タブナビゲーション「練習」タブ用（開いた本）
 export function OpenBookSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <path d="M240,100c-60-40-124-52-184-48v336c60-4,124,8,184,44V100z"></path>
       <path d="M272,100c60-40,124-52,184-48v336c-60-4-124,8-184,44V100z"></path>
       <path
@@ -59,12 +49,7 @@ export function OpenBookSVG({ className }: IconProps) {
 // 音読を表す、話している人の横顔と音の波（現在は未使用。練習タブのアイコン候補として残している）
 export function SpeakingHeadSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <path
         d="M72,496c0-56-12-96-28-146c-20-60-24-120-8-174C64,84,148,24,236,32c64,6,90,58,86,118l2,30l28,56
 			c6,12,0,22-12,24l-18,2l2,28c2,10-4,16-12,18l4,14c2,24-12,40-36,40l-36,2v132H72z"
@@ -83,12 +68,7 @@ export function SpeakingHeadSVG({ className }: IconProps) {
 // 音読を表すマイク（現在は未使用。練習タブのアイコン候補として残している）
 export function MicrophoneSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <rect x="176" y="16" width="160" height="288" rx="80"></rect>
       <path
         d="M112,240v16c0,79.529,64.471,144,144,144s144-64.471,144-144v-16M256,400v64M176,476h160"
@@ -105,12 +85,7 @@ export function MicrophoneSVG({ className }: IconProps) {
 // 下部タブナビゲーション「英文選択」タブ用（英文が並んだ書類）
 export function DocumentSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <path
         fillRule="evenodd"
         d="M120,16h272c30.928,0,56,25.072,56,56v368c0,30.928-25.072,56-56,56H120c-30.928,0-56-25.072-56-56V72
@@ -128,12 +103,7 @@ export function DocumentSVG({ className }: IconProps) {
 // 下部タブナビゲーション「練習履歴」タブ用（棒グラフ）
 export function BarChartSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <path
         d="M44,40v428h428"
         fill="none"
@@ -152,12 +122,7 @@ export function BarChartSVG({ className }: IconProps) {
 // カレンダー（現在は未使用。練習履歴タブのアイコン候補として残している）
 export function CalendarSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <path
         d="M149.193,103.525c15.994,0,28.964-12.97,28.964-28.972V28.964C178.157,12.97,165.187,0,149.193,0
 			C133.19,0,120.22,12.97,120.22,28.964v45.589C120.22,90.556,133.19,103.525,149.193,103.525z"
@@ -189,6 +154,35 @@ export function CalendarSVG({ className }: IconProps) {
   );
 }
 
+// 英文選択画面の設定ボタン用（歯車）
+export function SettingsSVG({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
+      <path
+        d="M502.325,307.303l-39.006-30.805c-6.215-4.908-9.665-12.429-9.668-20.348c0-0.084,0-0.168,0-0.252
+			c-0.014-7.936,3.44-15.478,9.667-20.396l39.007-30.806c8.933-7.055,12.093-19.185,7.737-29.701l-17.134-41.366
+			c-4.356-10.516-15.167-16.86-26.472-15.532l-49.366,5.8c-7.881,0.926-15.656-1.966-21.258-7.586
+			c-0.059-0.06-0.118-0.119-0.177-0.178c-5.597-5.602-8.476-13.36-7.552-21.225l5.799-49.363
+			c1.328-11.305-5.015-22.116-15.531-26.472L337.004,1.939c-10.516-4.356-22.646-1.196-29.701,7.736l-30.805,39.005
+			c-4.908,6.215-12.43,9.665-20.349,9.668c-0.084,0-0.168,0-0.252,0c-7.935,0.014-15.477-3.44-20.395-9.667L204.697,9.675
+			c-7.055-8.933-19.185-12.092-29.702-7.736L133.63,19.072c-10.516,4.356-16.86,15.167-15.532,26.473l5.799,49.366
+			c0.926,7.881-1.964,15.656-7.585,21.257c-0.059,0.059-0.118,0.118-0.178,0.178c-5.602,5.598-13.36,8.477-21.226,7.552
+			l-49.363-5.799c-11.305-1.328-22.116,5.015-26.472,15.531L1.939,174.996c-4.356,10.516-1.196,22.646,7.736,29.701l39.006,30.805
+			c6.215,4.908,9.665,12.429,9.668,20.348c0,0.084,0,0.167,0,0.251c0.014,7.935-3.44,15.477-9.667,20.395L9.675,307.303
+			c-8.933,7.055-12.092,19.185-7.736,29.701l17.134,41.365c4.356,10.516,15.168,16.86,26.472,15.532l49.366-5.799
+			c7.882-0.926,15.656,1.965,21.258,7.586c0.059,0.059,0.118,0.119,0.178,0.178c5.597,5.603,8.476,13.36,7.552,21.226l-5.799,49.364
+			c-1.328,11.305,5.015,22.116,15.532,26.472l41.366,17.134c10.516,4.356,22.646,1.196,29.701-7.736l30.804-39.005
+			c4.908-6.215,12.43-9.665,20.348-9.669c0.084,0,0.168,0,0.251,0c7.936-0.014,15.478,3.44,20.396,9.667l30.806,39.007
+			c7.055,8.933,19.185,12.093,29.701,7.736l41.366-17.134c10.516-4.356,16.86-15.168,15.532-26.472l-5.8-49.366
+			c-0.926-7.881,1.965-15.656,7.586-21.257c0.059-0.059,0.119-0.119,0.178-0.178c5.602-5.597,13.36-8.476,21.225-7.552l49.364,5.799
+			c11.305,1.328,22.117-5.015,26.472-15.531l17.134-41.365C514.418,326.488,511.258,314.358,502.325,307.303z M281.292,329.698
+			c-39.68,16.436-85.172-2.407-101.607-42.087c-16.436-39.68,2.407-85.171,42.087-101.608c39.68-16.436,85.172,2.407,101.608,42.088
+			C339.815,267.771,320.972,313.262,281.292,329.698z"
+      ></path>
+    </svg>
+  );
+}
+
 // カテゴリ見出しの開閉トグル用（下向きキャレット。開くと180度回転させて使う）
 export function ChevronDownSVG({ className }: IconProps) {
   return (
@@ -210,12 +204,7 @@ export function ChevronDownSVG({ className }: IconProps) {
 // 1リピート再生トグル用
 export function RepeatOneSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <path
         d="M260.658,337.105l-91.79-48.487c-2.542-1.377-5.665-0.946-7.781,0.998c-2.156,1.961-2.839,5.05-1.69,7.69
 			l8.581,20.475H130.71c-11.111-0.034-21.538-2.254-31.087-6.28c-14.298-6.048-26.532-16.208-35.165-28.966
@@ -243,12 +232,7 @@ export function RepeatOneSVG({ className }: IconProps) {
 // ランダム再生トグル用
 export function ShuffleSVG({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" className={className}>
       <path
         d="M418.976,324.763c-2.839-2.106-6.667-2.358-9.748-0.638c-3.081,1.733-4.861,5.103-4.573,8.628l2.454,28.148
 			c-11.937-1.733-22.768-4.429-32.732-7.954c-13.334-4.742-25.199-10.951-36.246-18.448c-16.535-11.24-31.24-25.524-45.056-42.059
